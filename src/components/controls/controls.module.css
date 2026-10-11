@@ -1,0 +1,337 @@
+.silk {
+  display: block;
+  font-family: var(--font-silk);
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  line-height: 1.1;
+  text-transform: uppercase;
+  color: var(--silk);
+  white-space: nowrap;
+  text-align: center;
+}
+
+/* ─── Buttons ─────────────────────────────────────────────── */
+
+.hw {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.hwRow {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.button {
+  --w: 40px;
+  --h: 24px;
+  width: var(--w);
+  height: var(--h);
+  padding: 0;
+  font-family: var(--font-silk);
+  font-size: 9px;
+  font-weight: 700;
+  color: #2b2d30;
+  border: 0;
+  border-radius: 3px;
+  cursor: pointer;
+  background: linear-gradient(180deg, #d4d6d8 0%, #a9acaf 100%);
+  box-shadow:
+    0 2px 0 #4a4c4f,
+    0 3px 4px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.55);
+  transition:
+    transform 60ms ease-out,
+    box-shadow 60ms ease-out;
+  touch-action: manipulation;
+}
+
+.button:active {
+  transform: translateY(2px);
+  box-shadow:
+    0 0 0 #4a4c4f,
+    0 1px 2px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.button:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+}
+
+.hw[data-size="sm"] .button {
+  --w: 32px;
+  --h: 20px;
+}
+
+.hw[data-size="lg"] .button {
+  --w: 48px;
+  --h: 30px;
+}
+
+.hw[data-size="wide"] .button {
+  --w: 54px;
+  --h: 30px;
+}
+
+.button[data-variant="dark"] {
+  color: #ddd;
+  background: linear-gradient(180deg, #4a4d51 0%, #2a2c2f 100%);
+  box-shadow:
+    0 2px 0 #111,
+    0 3px 4px rgba(0, 0, 0, 0.7),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.button[data-variant="red"] {
+  background: linear-gradient(180deg, #d8392c 0%, #a3201a 100%);
+  box-shadow:
+    0 2px 0 #5c110d,
+    0 3px 4px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 190, 180, 0.5);
+}
+
+.button[data-variant="orange"] {
+  background: linear-gradient(180deg, #f0a23b 0%, #c96f17 100%);
+  box-shadow:
+    0 2px 0 #6a3a0a,
+    0 3px 4px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 230, 190, 0.6);
+}
+
+.button[data-variant="white"],
+.button[data-variant="cream"] {
+  background: linear-gradient(180deg, #f6f6f2 0%, #d2d2cc 100%);
+}
+
+/* ─── LEDs ───────────────────────────────────────────────── */
+
+.led {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #3b1310;
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.8);
+}
+
+.led[data-color="green"] {
+  background: #102b12;
+}
+
+.led[data-on] {
+  background: #ff3d2e;
+  box-shadow: 0 0 6px 1px rgba(255, 60, 40, 0.75);
+}
+
+.led[data-on][data-color="green"] {
+  background: #63ff5a;
+  box-shadow: 0 0 6px 1px rgba(90, 255, 80, 0.7);
+}
+
+.led[data-blink] {
+  animation: blink 0.5s steps(1) infinite;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0.15;
+  }
+}
+
+/* ─── Knobs ──────────────────────────────────────────────── */
+
+.knobWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.knob {
+  position: relative;
+  width: 58px;
+  height: 58px;
+  cursor: ns-resize;
+  touch-action: none;
+  border-radius: 50%;
+}
+
+.knob:focus-visible,
+.wheel:focus-visible,
+.faderTrack:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+}
+
+.knobTicks {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: repeating-conic-gradient(from -135deg, #8c8f93 0 1.5deg, transparent 1.5deg 27deg);
+  mask: radial-gradient(circle, transparent 58%, #000 59%, #000 70%, transparent 71%);
+}
+
+.knobCap {
+  position: absolute;
+  inset: 9px;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 20deg,
+    #f2f2f2,
+    #9a9da1,
+    #e8e8e8,
+    #7d8085,
+    #f2f2f2,
+    #a5a8ac,
+    #f2f2f2
+  );
+  box-shadow:
+    0 3px 6px rgba(0, 0, 0, 0.75),
+    inset 0 0 0 2px rgba(0, 0, 0, 0.25);
+}
+
+.knobLine {
+  position: absolute;
+  top: 3px;
+  left: 50%;
+  width: 3px;
+  height: 14px;
+  margin-left: -1.5px;
+  border-radius: 2px;
+  background: #d61f17;
+}
+
+/* ─── Data wheel ─────────────────────────────────────────── */
+
+.wheelWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.wheel {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  padding: 4px;
+  background: #0d0e0f;
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.9);
+  cursor: grab;
+  touch-action: none;
+}
+
+.wheel:active {
+  cursor: grabbing;
+}
+
+.wheelCap {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 50%, #c9cbce 0 50%, transparent 51%),
+    repeating-conic-gradient(#e2e3e5 0 4deg, #6c6f73 4deg 8deg);
+  box-shadow:
+    0 4px 10px rgba(0, 0, 0, 0.8),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.4);
+}
+
+.wheelCap::after {
+  content: "";
+  position: absolute;
+  inset: 22%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #f4f4f4, #9ea1a5 70%);
+}
+
+.wheelDimple {
+  position: absolute;
+  z-index: 1;
+  top: 26%;
+  left: 50%;
+  width: 12px;
+  height: 12px;
+  margin-left: -6px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 60% 65%, #eee, #6b6e72);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+/* ─── Q-Link fader ───────────────────────────────────────── */
+
+.fader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.faderLabel {
+  padding: 1px 5px;
+  font-family: var(--font-silk);
+  font-size: 9px;
+  font-weight: 700;
+  color: #111;
+  background: #9ccc3c;
+  border-radius: 2px;
+}
+
+.faderTrack {
+  position: relative;
+  width: 36px;
+  height: 150px;
+  cursor: ns-resize;
+  touch-action: none;
+}
+
+.faderSlot {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 6px;
+  margin-left: -3px;
+  border-radius: 3px;
+  background: #050505;
+  box-shadow:
+    inset 0 1px 2px #000,
+    0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.faderThumb {
+  position: absolute;
+  left: 50%;
+  width: 30px;
+  height: 34px;
+  translate: -50% -50%;
+  border-radius: 3px;
+  background:
+    linear-gradient(transparent 46%, #333 46% 54%, transparent 54%),
+    repeating-linear-gradient(180deg, #c9cccf 0 3px, #a9acb0 3px 5px);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.8);
+}
+
+.faderTarget {
+  max-width: 60px;
+  overflow: hidden;
+  font-family: var(--font-silk);
+  font-size: 8px;
+  font-weight: 700;
+  color: var(--silk);
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .led[data-blink] {
+    animation: none;
+  }
+}

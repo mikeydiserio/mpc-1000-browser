@@ -1,0 +1,287 @@
+.device {
+  position: relative;
+  display: grid;
+  grid-template-columns: 92px minmax(400px, 470px) 290px;
+  gap: 20px 24px;
+  padding: 22px 26px 26px;
+  border-radius: 18px;
+  background:
+    radial-gradient(120% 70% at 30% 0%, rgba(255, 255, 255, 0.06), transparent 60%),
+    linear-gradient(180deg, #1d1e21 0%, #121315 100%);
+  box-shadow:
+    0 30px 60px -20px rgba(0, 0, 0, 0.9),
+    0 0 0 1px #000,
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.6);
+}
+
+/* Machined edge strip along the top, like the rear panel lip */
+.screws {
+  position: absolute;
+  top: 8px;
+  right: 40px;
+  display: flex;
+  gap: 18px;
+}
+
+.screws::before {
+  content: "";
+  width: 220px;
+  height: 6px;
+  border-radius: 3px;
+  background: repeating-linear-gradient(90deg, #2d2f33 0 10px, #0b0c0d 10px 26px);
+  opacity: 0.8;
+}
+
+/* ─── Left column ─────────────────────────────────────────── */
+
+.left {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.logo {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+  margin-top: 6px;
+  font-style: italic;
+  color: #f2f2f2;
+  user-select: none;
+}
+
+.logoMpc {
+  font-family: "Arial Black", "Helvetica Neue", sans-serif;
+  font-size: 30px;
+  font-weight: 900;
+  letter-spacing: -0.06em;
+  line-height: 1;
+  background: linear-gradient(180deg, #ffffff 30%, #9ea2a8 100%);
+  background-clip: text;
+  color: transparent;
+}
+
+.logoNum {
+  font-family: var(--font-silk);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.qlinks {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+  padding: 12px 6px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.25);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.7);
+}
+
+.qlink {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.qlinkBrand {
+  font-family: var(--font-silk);
+  font-size: 13px;
+  color: var(--silk);
+}
+
+.qlinkBrand b {
+  display: inline-grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  margin-right: 1px;
+  border-radius: 50%;
+  color: #111;
+  background: var(--silk);
+}
+
+/* ─── Centre column ───────────────────────────────────────── */
+
+.centre {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.mpcTitle {
+  margin-bottom: -4px;
+  font-family: var(--font-silk);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-align: center;
+  color: var(--silk-dim);
+}
+
+.fkeys {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  justify-items: center;
+  margin-bottom: 8px;
+}
+
+/* ─── Right column ────────────────────────────────────────── */
+
+.right {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.knobs {
+  display: flex;
+  justify-content: space-around;
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.groupLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-silk);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--silk);
+}
+
+.groupLabel::before,
+.groupLabel::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.row4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  justify-items: center;
+  align-items: end;
+}
+
+.dataBlock {
+  display: grid;
+  grid-template-columns: 1fr 112px 1fr;
+  grid-template-areas:
+    "tap   wheel erase"
+    "mode  wheel undo"
+    "main  cursor window";
+  align-items: center;
+  justify-items: center;
+  row-gap: 10px;
+}
+
+.areaTap {
+  grid-area: tap;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.subSilk {
+  font-family: var(--font-silk);
+  font-size: 7.5px;
+  font-weight: 700;
+  color: var(--silk-dim);
+}
+
+.areaWheel {
+  grid-area: wheel;
+}
+
+.areaErase {
+  grid-area: erase;
+}
+
+.areaMode {
+  grid-area: mode;
+}
+
+.areaUndo {
+  grid-area: undo;
+}
+
+.areaMain {
+  grid-area: main;
+}
+
+.areaWindow {
+  grid-area: window;
+}
+
+.cursorPad {
+  grid-area: cursor;
+  display: grid;
+  grid-template-columns: repeat(3, auto);
+  grid-template-areas:
+    ".    up    ."
+    "left .     right"
+    ".    down  .";
+  gap: 1px 2px;
+}
+
+.cursorPad > :nth-child(1) {
+  grid-area: up;
+}
+
+.cursorPad > :nth-child(2) {
+  grid-area: left;
+}
+
+.cursorPad > :nth-child(3) {
+  grid-area: right;
+}
+
+.cursorPad > :nth-child(4) {
+  grid-area: down;
+}
+
+.locate {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  justify-items: center;
+  align-items: end;
+  row-gap: 6px;
+}
+
+.transport {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  justify-items: center;
+  align-items: end;
+  padding-top: 4px;
+}
+
+@media (max-width: 760px) {
+  .device {
+    grid-template-columns: 1fr;
+    padding: 18px 14px;
+  }
+
+  .left {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .qlinks {
+    flex-direction: row;
+  }
+}

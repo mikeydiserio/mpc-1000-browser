@@ -1,0 +1,333 @@
+.lcd {
+  /* Reserve space so the panel doesn't collapse while the screen is enlarged (WINDOW) */
+  min-height: 230px;
+  --ink: #1b2610;
+  --ink-soft: rgba(27, 38, 16, 0.55);
+  --glass: #a8c070;
+  --glass-hi: #c3d690;
+  position: relative;
+  padding: 8px;
+  background: #0b0c0d;
+  border-radius: 6px;
+  box-shadow:
+    inset 0 2px 6px rgba(0, 0, 0, 0.9),
+    0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.screen {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 214px;
+  padding: 4px 6px;
+  overflow: hidden;
+  font-family: "VT323", ui-monospace, monospace;
+  font-size: 17px;
+  line-height: 1;
+  color: var(--ink);
+  background:
+    radial-gradient(120% 140% at 30% 0%, var(--glass-hi), transparent 60%),
+    linear-gradient(180deg, var(--glass-hi) 0%, var(--glass) 100%);
+  border-radius: 2px;
+  box-shadow: inset 0 0 18px rgba(40, 60, 20, 0.45);
+  user-select: none;
+}
+
+/* Faint pixel grid sells the dot-matrix look */
+.screen::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(27, 38, 16, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(27, 38, 16, 0.05) 1px, transparent 1px);
+  background-size: 3px 3px;
+}
+
+.lcd[data-expanded] .screen {
+  position: fixed;
+  z-index: 31;
+  top: 50%;
+  left: 50%;
+  width: min(920px, 94vw);
+  height: min(460px, 86dvh);
+  transform: translate(-50%, -50%);
+  font-size: 26px;
+  padding: 10px 14px;
+  outline: 10px solid #0b0c0d;
+}
+
+.backdrop {
+  position: fixed;
+  z-index: 30;
+  inset: 0;
+  border: 0;
+  background: rgba(0, 0, 0, 0.7);
+  cursor: zoom-out;
+}
+
+.titleBar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 1px 4px 2px;
+  margin-bottom: 3px;
+  color: var(--glass-hi);
+  background: var(--ink);
+  white-space: nowrap;
+}
+
+.mode {
+  flex: none;
+  padding-right: 6px;
+  border-right: 1px solid var(--glass);
+}
+
+.title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bpm {
+  flex: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.visual {
+  flex: none;
+  margin-bottom: 3px;
+}
+
+.params {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-auto-rows: min-content;
+  column-gap: 10px;
+  row-gap: 1px;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.params[data-columns="1"] {
+  grid-template-columns: 1fr;
+}
+
+.param {
+  display: flex;
+  gap: 4px;
+  padding: 1px 3px;
+  white-space: nowrap;
+  cursor: ns-resize;
+  touch-action: none;
+}
+
+.param[data-selected] {
+  color: var(--glass-hi);
+  background: var(--ink);
+}
+
+.label {
+  flex: none;
+  min-width: 4.4em;
+}
+
+.value {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-variant-numeric: tabular-nums;
+}
+
+.fkeyBar {
+  flex: none;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 3px;
+  margin-top: 3px;
+}
+
+.fkeyLabel {
+  padding: 1px 0;
+  text-align: center;
+  border: 1px solid var(--ink);
+  border-radius: 1px;
+}
+
+.fkeyLabel[data-active] {
+  color: var(--glass-hi);
+  background: var(--ink);
+}
+
+.fkeyLabel[data-empty] {
+  border-color: transparent;
+}
+
+.message {
+  position: absolute;
+  z-index: 1;
+  left: 50%;
+  top: 50%;
+  max-width: 90%;
+  padding: 6px 12px;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: var(--glass-hi);
+  background: var(--ink);
+  outline: 2px solid var(--glass);
+  outline-offset: -4px;
+}
+
+.waveform {
+  display: block;
+  width: 100%;
+  border: 1px solid var(--ink-soft);
+  cursor: ew-resize;
+  touch-action: none;
+}
+
+.note {
+  margin: 0;
+  padding: 2px 3px 4px;
+  color: var(--ink);
+  line-height: 1.05;
+}
+
+.counter {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 3px 3px;
+  border-bottom: 1px dashed var(--ink-soft);
+  font-size: 1.2em;
+  font-variant-numeric: tabular-nums;
+}
+
+.counterStatus[data-rec] {
+  padding: 0 4px;
+  color: var(--glass-hi);
+  background: var(--ink);
+}
+
+.meterWrap {
+  padding: 2px 3px 4px;
+}
+
+.meterLabel {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 3px;
+}
+
+.meter {
+  height: 14px;
+  border: 1px solid var(--ink);
+  padding: 1px;
+}
+
+.meterFill {
+  height: 100%;
+  background: repeating-linear-gradient(90deg, var(--ink) 0 4px, transparent 4px 6px);
+  transform: scaleX(0);
+  transform-origin: left;
+}
+
+.meterScale {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8em;
+  color: var(--ink-soft);
+}
+
+.strips {
+  display: grid;
+  grid-template-columns: repeat(16, 1fr);
+  gap: 2px;
+  height: 64px;
+  padding: 0 1px;
+}
+
+.strip {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0;
+  border: 1px solid transparent;
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.strip[data-selected] {
+  border-color: var(--ink);
+}
+
+.strip[data-muted] .stripFill {
+  background: repeating-linear-gradient(45deg, var(--ink) 0 2px, transparent 2px 4px);
+}
+
+.stripTrack {
+  position: relative;
+  flex: 1;
+  width: 6px;
+  margin-top: 2px;
+  border: 1px solid var(--ink-soft);
+}
+
+.stripFill {
+  position: absolute;
+  inset: 0;
+  background: var(--ink);
+  transform-origin: bottom;
+}
+
+.stripPan {
+  position: absolute;
+  bottom: 13px;
+  width: 3px;
+  height: 3px;
+  background: var(--ink);
+  translate: -50% 0;
+}
+
+.stripNum {
+  font-size: 0.75em;
+  line-height: 12px;
+}
+
+.song {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  padding: 0 3px 3px;
+}
+
+.songStep {
+  padding: 0 3px;
+  border: 1px solid var(--ink-soft);
+}
+
+.songStep[data-current] {
+  color: var(--glass-hi);
+  background: var(--ink);
+}
+
+.modeGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2px 6px;
+  padding: 4px;
+}
+
+.modeGrid span {
+  padding: 2px 3px;
+  border: 1px solid var(--ink-soft);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
