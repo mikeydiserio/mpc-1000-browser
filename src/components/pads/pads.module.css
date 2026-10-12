@@ -75,9 +75,17 @@
   outline-offset: 2px;
 }
 
-.pad[data-drop] {
-  outline: 2px dashed var(--accent);
+/* While files are dragged over the page every pad shows it is a target; the one under the
+   pointer lights up */
+:global(html[data-file-drag]) .pad {
+  outline: 2px dashed rgba(163, 208, 68, 0.45);
   outline-offset: 2px;
+}
+
+.cell[data-drop] .pad {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+  background: linear-gradient(180deg, #e9f3cf 0%, #c6dc8f 100%);
 }
 
 .pad[data-muted] {

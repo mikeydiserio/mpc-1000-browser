@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { usePadActivity } from '../../audio/transport'
 import { loadFilesToPads } from '../../state/library'
 import { MODE_LABELS, PAD_KEYS, pressPad, releasePad, usePadsDown } from '../../state/pad-input'
@@ -42,6 +43,7 @@ function Pad({ position, topSilk }: { position: number; topSilk?: string }) {
   })
   const hit = usePadActivity((a) => a.hits[sixteen.on ? sixteen.source : pad])
   const down = usePadsDown((d) => !!d.down[position])
+  const [over, setOver] = useState(false)
 
   const caption = modeSelect
     ? (MODE_LABELS[position] ?? '')
@@ -52,7 +54,26 @@ function Pad({ position, topSilk }: { position: number; topSilk?: string }) {
       : (name ?? '')
 
   return (
-    <div className={s.cell} data-hint="pad">
+    // biome-ignore lint/a11y/noStaticElementInteractions: drop target only — the whole cell (pad + printed label) takes dropped files so near misses still land; the pad button inside is the control
+    <div
+      className={s.cell}
+      data-hint="pad"
+      data-drop={over || undefined}
+      onDragOver={(e) => {
+        e.preventDefault()
+        e.dataTransfer.dropEffect = 'copy'
+        setOver(true)
+      }}
+      onDragLeave={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setOver(false)
+      }}
+      onDrop={(e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        setOver(false)
+        void loadFilesToPads([...e.dataTransfer.files], pad)
+      }}
+    >
       {topSilk ? <span className={s.topSilk}>{topSilk}</span> : null}
       <span className={s.silk}>
         PAD{position + 1}
@@ -89,19 +110,6 @@ function Pad({ position, topSilk }: { position: number; topSilk?: string }) {
         }}
         onKeyUp={(e) => {
           if (e.key === 'Enter' || e.key === ' ') releasePad(position)
-        }}
-        onDragOver={(e) => {
-          e.preventDefault()
-          e.currentTarget.dataset.drop = 'true'
-        }}
-        onDragLeave={(e) => {
-          delete e.currentTarget.dataset.drop
-        }}
-        onDrop={(e) => {
-          e.preventDefault()
-          e.stopPropagation()
-          delete e.currentTarget.dataset.drop
-          void loadFilesToPads([...e.dataTransfer.files], pad)
         }}
       >
         {hit ? <span key={hit} className={s.flash} /> : null}

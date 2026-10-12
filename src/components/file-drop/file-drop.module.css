@@ -1,0 +1,18 @@
+.banner {
+  position: fixed;
+  z-index: 40;
+  top: 14px;
+  left: 50%;
+  max-width: min(760px, 92vw);
+  padding: 12px 18px;
+  font-size: 14px;
+  line-height: 1.4;
+  text-align: center;
+  text-wrap: balance;
+  color: #1b2610;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #d2e6a0 0%, #a9c36f 100%);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+  transform: translateX(-50%);
+  pointer-events: none;
+}

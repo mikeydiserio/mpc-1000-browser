@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import s from './app.module.css'
 import { engine } from './audio/engine'
 import { bindInput, initMidi } from './audio/midi'
+import { FileDrop } from './components/file-drop/file-drop'
 import { useLcdUi } from './components/lcd/lcd-ui'
 import { adjustCursorParam } from './components/lcd/params'
 import { Mpc } from './components/mpc/mpc'
@@ -9,9 +10,11 @@ import { Sequencer } from './components/sequencer/sequencer'
 import { usePicker } from './components/sound-picker/picker-store'
 import { SoundPicker } from './components/sound-picker/sound-picker'
 import { Tb303 } from './components/tb303/tb303'
+import { Toasts } from './components/toast/toasts'
 import { Guide } from './guide/guide'
 import { openGuide, useGuide } from './guide/guide-store'
 import { HintBar } from './guide/hint-bar'
+import { Welcome } from './guide/welcome'
 import { commands } from './state/commands'
 import { newProject, restoreSession, saveNow, startAutosave } from './state/library'
 import { PAD_KEYS, pressPad, releasePad } from './state/pad-input'
@@ -40,6 +43,14 @@ export function App() {
 
   return (
     <main className={s.app}>
+      <header className={s.topbar}>
+        <p className={s.tagline}>
+          <strong>MPC 1000</strong> · Browser Edition — sampler, step sequencer &amp; TB-303
+        </p>
+        <button type="button" className={s.howTo} data-hint="guide" onClick={() => openGuide()}>
+          <span aria-hidden>?</span> How to use
+        </button>
+      </header>
       <div className={s.stage} data-ready={ready || undefined}>
         <div className={s.left}>
           <Mpc />
@@ -51,6 +62,9 @@ export function App() {
       <HintBar />
       <Guide />
       <SoundPicker />
+      <FileDrop />
+      <Toasts />
+      <Welcome />
     </main>
   )
 }
@@ -93,7 +107,12 @@ function useKeyboard() {
     const down = (e: KeyboardEvent) => {
       if (e.key === 'Shift') useMpc.getState().set({ shift: true })
       if (isTyping(e.target) || e.metaKey || e.ctrlKey || e.altKey) return
-      if (useGuide.getState().open || usePicker.getState().pad !== null) return
+      if (
+        useGuide.getState().open ||
+        usePicker.getState().pad !== null ||
+        document.querySelector('dialog[open]')
+      )
+        return
       if (e.key === '?') {
         e.preventDefault()
         openGuide()

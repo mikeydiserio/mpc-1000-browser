@@ -4,6 +4,73 @@
   padding: 32px 24px 96px;
 }
 
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  max-width: 2000px;
+  margin: -12px auto 18px;
+}
+
+.tagline {
+  margin: 0;
+  font-size: 13px;
+  color: var(--silk-dim);
+}
+
+.tagline strong {
+  font-style: italic;
+  color: var(--silk);
+}
+
+.howTo {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 0 20px 0 8px;
+  font-family: var(--font-silk);
+  font-size: 15px;
+  font-weight: 800;
+  color: #1b2610;
+  border: 0;
+  border-radius: 22px;
+  background: linear-gradient(180deg, #d2e6a0 0%, #9fb86a 100%);
+  box-shadow:
+    0 3px 0 #3e4a24,
+    0 0 0 4px rgba(163, 208, 68, 0.18);
+  cursor: pointer;
+}
+
+.howTo span {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  font-size: 17px;
+  color: #d2e6a0;
+  border-radius: 50%;
+  background: #2b3518;
+}
+
+.howTo:hover {
+  box-shadow:
+    0 3px 0 #3e4a24,
+    0 0 0 6px rgba(163, 208, 68, 0.28);
+}
+
+.howTo:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #3e4a24;
+}
+
+.howTo:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 4px;
+}
+
 .stage {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);

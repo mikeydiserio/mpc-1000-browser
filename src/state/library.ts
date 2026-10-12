@@ -2,9 +2,11 @@ import { del, get, keys, set } from 'idb-keyval'
 import { engine } from '../audio/engine'
 import { downloadBlob, encodeWav } from '../audio/wav'
 import { createPad } from './defaults'
+import { padLabel } from './format'
 import { loadMachine } from './machines'
 import { type ProjectData, projectSnapshot, useMpc } from './store'
-import type { PadParams, SampleMeta } from './types'
+import { toast } from './toast'
+import { PAD_COUNT, type PadParams, type SampleMeta } from './types'
 
 const PROJECT_KEY = 'mpc:project'
 const SAMPLE_PREFIX = 'mpc:sample:'
@@ -49,16 +51,48 @@ export async function loadFileToPad(file: File, pad: number) {
     return meta
   } catch {
     useMpc.getState().flash(`Can't decode ${file.name.slice(0, 14)}`)
+    toast(
+      `Couldn't load “${file.name}” — the browser can't read it as audio. WAV, MP3, OGG, FLAC and M4A work.`,
+      'error',
+    )
     return null
   }
 }
 
-/** Drop several files at once: they fill consecutive pads starting at `firstPad`. */
+/**
+ * Load dropped or picked files. Audio fills consecutive pads starting at `firstPad`; a project
+ * or kit file is opened instead. Every outcome is reported, so a drop never fails silently.
+ */
 export async function loadFilesToPads(files: File[], firstPad: number) {
-  const audio = files.filter(
-    (f) => f.type.startsWith('audio/') || /\.(wav|mp3|ogg|flac|aif+|m4a)$/i.test(f.name),
+  if (!files.length) {
+    toast(
+      'Nothing to load — drag audio files from your computer (not a folder or a link).',
+      'error',
+    )
+    return
+  }
+  const projectFile = files.find((f) => /\.(mpcweb|mpckit)$/i.test(f.name))
+  if (projectFile) {
+    await importFile(projectFile)
+    return
+  }
+  let pad = firstPad
+  let loaded = 0
+  let lastName = ''
+  for (const file of files) {
+    const meta = await loadFileToPad(file, pad % PAD_COUNT)
+    if (!meta) continue
+    loaded++
+    lastName = meta.name
+    pad++
+  }
+  if (!loaded) return
+  useMpc.getState().selectPad(firstPad % PAD_COUNT)
+  toast(
+    loaded === 1
+      ? `Loaded “${lastName}” onto PAD ${padLabel(firstPad % PAD_COUNT)}`
+      : `Loaded ${loaded} samples onto PAD ${padLabel(firstPad % PAD_COUNT)}–${padLabel((pad - 1) % PAD_COUNT)}`,
   )
-  for (let i = 0; i < audio.length; i++) await loadFileToPad(audio[i]!, (firstPad + i) % 64)
 }
 
 // ─── Autosave ────────────────────────────────────────────────────────────────
@@ -221,6 +255,7 @@ export async function importFile(file: File) {
       await restoreSamples(parsed.samples)
       s.loadProject(parsed.project)
       s.flash('Project loaded')
+      toast(`Opened project “${file.name}”`)
     } else if (isKitFile(parsed)) {
       await restoreSamples(parsed.samples)
       useMpc.setState((x) => ({
@@ -228,11 +263,13 @@ export async function importFile(file: File) {
         pads: parsed.pads.map((p) => ({ ...createPad(), ...p })),
       }))
       s.flash('Kit loaded')
+      toast(`Loaded kit “${file.name}”`)
     } else {
       throw new Error('unknown file')
     }
   } catch {
     s.flash('Not a project or kit file')
+    toast(`“${file.name}” isn't a project or kit file`, 'error')
   }
 }
 

@@ -465,7 +465,7 @@ The panel to the right of the MPC.
 - **Acc** — Accent this step — louder and brighter (set by the 303’s ACCENT knob).
 - **Slide** — Slide from this note into the next: the pitch glides and the note is held through with no new attack. Needs a note on the next step.
 - **M / S (TB-303)** — Mute or solo the 303. Soloing the 303 silences the drums; soloing a drum track silences the 303 unless it is soloed too.
-- **GUIDE** — Open this guide. Shortcut: ? key.
+- **How to use** — Open the full guide: every button, screen and workflow. Shortcut: ? key.
 
 ## How to…
 
@@ -484,6 +484,14 @@ The panel to the right of the MPC.
 4. Click Acc under a step to accent it and Slide to glide into the next note. ▲/▼ in the Oct row moves a note an octave.
 5. Or write it on the 303: press WRITE, click the first step in the lane, then play keys. REST leaves a gap, and the latched ACCENT/SLIDE/UP/DOWN buttons apply to each note you enter.
 6. Stuck? RANDOM writes a fresh line in the chosen scale — press it until something clicks, then edit.
+
+### Load your own samples
+
+1. Drag one or more audio files (WAV, MP3, OGG, FLAC, M4A, AIFF) from your computer onto a pad. While you drag, every pad is outlined and the one under the pointer lights up.
+2. Several files fill consecutive pads, starting with the pad you drop on. Dropping on the LCD screen fills pads from the selected pad; dropping anywhere else loads onto the selected pad.
+3. A message in the bottom-right corner confirms what loaded where — or says why a file could not be read.
+4. No drag and drop? Use ⇄ on a sequencer row (or right-click a pad) → Load file…, or MODE → PAD2 (LOAD) → F1 FILE.
+5. Trim it with MODE → PAD6 (TRIM), tune and shape it with MODE → PAD7 (PROGRAM).
 
 ### Change the sound on a pad
 
