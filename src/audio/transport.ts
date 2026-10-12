@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { useMpc } from '../state/store'
-import { PADS_PER_BANK, type Step } from '../state/types'
+import { type AcidStep, PADS_PER_BANK, type Step } from '../state/types'
+import { ACID_GATE } from './acid'
 import { engine } from './engine'
 import { divisionSeconds, stepSeconds, stepsPerBeat, swingOffset } from './timing'
 
@@ -101,6 +102,8 @@ class Transport {
       queuedPattern: null,
     })
     usePlayhead.setState({ countIn: false })
+    // The 303 gate may be held open by a slide: close it with the transport
+    engine.acidRelease()
     cancelAnimationFrame(this.raf)
   }
 
@@ -226,6 +229,8 @@ class Transport {
     const nextStep = last ? 0 : step + 1
     const nextDur = stepSeconds(nextPattern.resolution, s.bpm)
     const nextT = this.nextStepTime + stepDur + swingOffset(nextStep, nextPattern.swing, nextDur)
+    this.scheduleBass(pattern.bass[step]!, nextPattern.bass[nextStep]!, t, stepDur)
+
     for (let pad = 0; pad < nextPattern.tracks.length; pad++) {
       const st = nextPattern.tracks[pad]![nextStep]!
       if (st.on && (st.offset ?? 0) < 0) {
@@ -276,7 +281,7 @@ class Transport {
       return
     }
     if (this.suppress.delete(key)) return
-    const anySolo = s.solos.some(Boolean)
+    const anySolo = s.acid.solo || s.solos.some(Boolean)
     if (s.mutes[pad] || (anySolo && !s.solos[pad])) return
     const opts = {
       velocity: st.velocity,
@@ -286,6 +291,17 @@ class Transport {
     }
     engine.trigger(pad, s.pads, opts, time)
     this.light(pad, time)
+  }
+
+  /** TB-303 step: a slide holds the gate into the next step when that step has a note. */
+  private scheduleBass(step: AcidStep, next: AcidStep, time: number, stepDur: number) {
+    const { acid, solos } = useMpc.getState()
+    const audible = !acid.mute && (acid.solo || !solos.some(Boolean))
+    if (!step.on || !audible) {
+      engine.acidRest(time)
+      return
+    }
+    engine.acidNote(step, time, stepDur * ACID_GATE, step.slide && next.on)
   }
 
   /** Which pattern plays after the current one ends — mirrors patternEnd() without side effects. */

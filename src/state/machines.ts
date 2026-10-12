@@ -1,10 +1,10 @@
 import { create } from 'zustand'
 import { machineById, renderMachine, renderVoice } from '../audio/machines/registry'
 import type { MachineDef, MachineVoice } from '../audio/machines/types'
-import { createPad, createPattern } from './defaults'
+import { createAcid, createAcidStep, createPad, createPattern } from './defaults'
 import { addBuffer } from './library'
 import { useMpc } from './store'
-import { PAD_COUNT, PADS_PER_BANK, type Pattern, type Step } from './types'
+import { type AcidStep, PAD_COUNT, PADS_PER_BANK, type Pattern, type Step } from './types'
 
 /** Which machine is loading / was loaded last, for button states. */
 export const useMachines = create<{ busy: string | null; loaded: string | null }>(() => ({
@@ -30,7 +30,34 @@ function buildPattern(machine: MachineDef, index: number): Pattern {
       return velocity ? { on: true, velocity } : step
     })
   }
+  if (def.bass) pattern.bass = parseBass(def.bass, pattern.bass, `${machine.name} "${def.name}"`)
   return pattern
+}
+
+const NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B', "C'"]
+
+/** Parse a bassline written as tokens like `C>` `D#~` `A#v` `.` (see MachinePattern.bass). */
+export function parseBass(line: string, into: AcidStep[], where: string): AcidStep[] {
+  const bass = into.slice()
+  line
+    .trim()
+    .split(/\s+/)
+    .forEach((token, i) => {
+      if (token === '.') return
+      const match = /^([A-G]#?'?)([\^v>~]*)$/.exec(token)
+      const note = match ? NOTES.indexOf(match[1]!) : -1
+      if (!match || note === -1) throw new Error(`${where}: bad bass token "${token}"`)
+      const flags = match[2]!
+      bass[i] = {
+        ...createAcidStep(),
+        on: true,
+        note,
+        octave: flags.includes('^') ? 1 : flags.includes('v') ? -1 : 0,
+        accent: flags.includes('>'),
+        slide: flags.includes('~'),
+      }
+    })
+  return bass
 }
 
 /**
@@ -65,6 +92,7 @@ export async function loadMachine(id: string, opts: { kitOnly?: boolean; bank?: 
         pads,
         patterns,
         bpm: machine.bpm,
+        acid: { ...createAcid(), ...machine.acid },
         song: machine.song,
         songMode: false,
         songPosition: 0,

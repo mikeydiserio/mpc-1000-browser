@@ -221,6 +221,7 @@ export const TR808: MachineDef = {
     {
       name: 'Electro',
       length: 16,
+      bass: 'C> . . C . . . . D# . . F . F~ G .',
       tracks: {
         BD: 'X.....x...X.....',
         SD: '....x.......x...',
@@ -234,6 +235,7 @@ export const TR808: MachineDef = {
     {
       name: 'Miami Bass',
       length: 16,
+      bass: 'C . . C . . C . . . C . D# . . .',
       tracks: {
         BD: 'X..x..X...X..x..',
         CP: '....X.......X...',
@@ -258,4 +260,5 @@ export const TR808: MachineDef = {
     },
   ],
   song: [0, 0, 1, 1, 0, 2],
+  acid: { wave: 'square', cutoff: 0.25, resonance: 0.4, envMod: 0.4, decay: 0.5, drive: 0.2 },
 }

@@ -15,6 +15,12 @@
   transition: opacity 200ms ease-out;
 }
 
+.left {
+  display: grid;
+  gap: 20px;
+  min-width: 0;
+}
+
 .stage[data-ready] {
   opacity: 1;
 }

@@ -98,6 +98,39 @@ export interface Step {
   pitch?: number
 }
 
+/** One step of the TB-303 bassline, programmed like the real machine's step-write. */
+export interface AcidStep {
+  /** Note (true) or rest */
+  on: boolean
+  /** Key on the 13-note keyboard, 0 = C … 12 = C an octave up */
+  note: number
+  /** Octave transpose: DOWN, normal or UP */
+  octave: -1 | 0 | 1
+  accent: boolean
+  /** Glide into the next note and hold the gate (legato) */
+  slide: boolean
+}
+
+export type AcidWave = 'saw' | 'square'
+
+/** TB-303 front panel. Knobs are 0..1 unless noted. */
+export interface AcidSettings {
+  wave: AcidWave
+  /** Semitones, -12..12 */
+  tune: number
+  cutoff: number
+  resonance: number
+  envMod: number
+  decay: number
+  accent: number
+  drive: number
+  volume: number
+  sendDelay: number
+  sendReverb: number
+  mute: boolean
+  solo: boolean
+}
+
 export interface Pattern {
   name: string
   /** Active length in steps, multiple of 8 from 8..64 */
@@ -107,6 +140,8 @@ export interface Pattern {
   swing: number
   /** tracks[padIndex][stepIndex] — always MAX_STEPS long */
   tracks: Step[][]
+  /** TB-303 bassline — always MAX_STEPS long */
+  bass: AcidStep[]
 }
 
 export type LcdMode =

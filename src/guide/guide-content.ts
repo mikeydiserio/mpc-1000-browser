@@ -41,7 +41,8 @@ export const QUICK_START: string[] = [
   'Press PLAY START (or Space). A demo beat plays in Sequence 01; the green column is the playhead.',
   'Click empty cells in the Pattern Sequencer to add hits; click lit cells to remove them. Drag to paint.',
   'Press OVER DUB while playing and tap pads in time — your hits are written into the pattern.',
-  'Want a classic sound? Click TR-808, TR-909, TR-606 or LinnDrum in the Drum machines strip — the kit and matching grooves load together.',
+  'Want a classic sound? Click TR-808, TR-909, TR-606 or LinnDrum in the Drum machines strip — the kit, matching grooves and a TB-303 bassline load together.',
+  'The TB-303 under the MPC plays a bassline in every sequence: draw notes in the TB-303 lane of the sequencer, or hit RANDOM on the 303 for an instant acid line.',
   'Drag a WAV/MP3 from your computer onto a pad to replace its sound.',
   'Press MODE, then PAD6 (TRIM) to cut the sound, or PAD7 (PROGRAM) to tune and shape it.',
   'Your work autosaves in this browser. MODE → PAD3 (SAVE) exports a project file or a WAV.',
@@ -205,6 +206,100 @@ export const PANEL: ControlGroup[] = [
         text: 'Stop playback and recording. Press again while stopped to silence every ringing sound (panic).',
       },
       { id: 'play', name: 'PLAY', text: 'Play from the located position (see LOCATE).' },
+    ],
+  },
+  {
+    title: 'TB-303 bass line (under the MPC)',
+    controls: [
+      {
+        id: 'tb-panel',
+        name: 'TB-303',
+        text: 'A monophonic acid bass synth. Each sequence has its own 303 line, which plays in time with the drums, follows the sequence length and swing, and is saved and exported with the project. Edit it in the TB-303 lane of the sequencer or with the keyboard below.',
+      },
+      {
+        id: 'tb-wave',
+        name: 'WAVEFORM',
+        text: 'Sawtooth (buzzy, classic acid) or square (hollow, rounder).',
+      },
+      {
+        id: 'tb-tune',
+        name: 'TUNING',
+        text: 'Transposes the whole bassline ±12 semitones. Double-click resets it.',
+      },
+      {
+        id: 'tb-cutoff',
+        name: 'CUT OFF FREQ',
+        text: 'Where the low-pass filter sits. Low = dark and rubbery, high = bright. Sweep it while the pattern plays — that is the acid sound.',
+      },
+      {
+        id: 'tb-resonance',
+        name: 'RESONANCE',
+        text: 'Boosts the filter at the cutoff for the squelchy, whistling tone. High settings with ENV MOD make the classic “wow”.',
+      },
+      {
+        id: 'tb-envmod',
+        name: 'ENV MOD',
+        text: 'How far each note opens the filter before it closes back to the cutoff.',
+      },
+      {
+        id: 'tb-decay',
+        name: 'DECAY',
+        text: 'How quickly the filter closes after each note. Accented notes always use a short decay, like the hardware.',
+      },
+      {
+        id: 'tb-accent',
+        name: 'ACCENT',
+        text: 'How much louder and brighter accented steps are.',
+      },
+      {
+        id: 'tb-drive',
+        name: 'DRIVE',
+        text: 'Overdrive after the filter, from warm to distorted.',
+      },
+      {
+        id: 'tb-delay',
+        name: 'DELAY',
+        text: 'Send the 303 to the MPC’s delay (timing and feedback are set on the EFFECT screen).',
+      },
+      { id: 'tb-reverb', name: 'REVERB', text: 'Send the 303 to the MPC’s reverb.' },
+      { id: 'tb-volume', name: 'VOLUME', text: 'Level of the 303 in the mix.' },
+      {
+        id: 'tb-keys',
+        name: 'Keyboard',
+        text: 'Play the 303 (C to C, 13 keys). With WRITE on, each key stores a note at the write step and moves on one step.',
+      },
+      {
+        id: 'tb-octave',
+        name: 'DOWN / UP',
+        text: 'Octave for the notes you play or write — lit = one octave down or up.',
+      },
+      {
+        id: 'tb-accent-btn',
+        name: 'ACCENT (button)',
+        text: 'When lit, notes you write are accented.',
+      },
+      {
+        id: 'tb-slide-btn',
+        name: 'SLIDE (button)',
+        text: 'When lit, notes you write slide: the pitch glides into the next note and the note is held through, with no new attack.',
+      },
+      {
+        id: 'tb-write',
+        name: 'WRITE',
+        text: 'Step-write mode, like the real 303: play keys to enter the line note by note. The write step is outlined in the sequencer; click a step there to jump to it.',
+      },
+      {
+        id: 'tb-step',
+        name: '◀ STEP ▶ / display',
+        text: 'Move the write step. The display shows the step and the note stored there.',
+      },
+      { id: 'tb-rest', name: 'REST', text: 'In WRITE mode, store a rest and move on one step.' },
+      {
+        id: 'tb-random',
+        name: 'RANDOM / SCALE',
+        text: 'Write a random acid line in the chosen scale over the whole sequence (UNDO SEQ brings the old one back).',
+      },
+      { id: 'tb-clear', name: 'CLEAR', text: 'Erase this sequence’s bassline.' },
     ],
   },
 ]
@@ -466,7 +561,7 @@ export const SCREENS: ScreenGuide[] = [
     mode: 'machine',
     name: 'MACHINE (PAD4)',
     open: 'MODE → PAD4, or the Drum machines strip in the sequencer',
-    text: 'Classic drum machines, rebuilt by synthesis (no original ROM samples): TR-808 (1980 — electro, Miami bass, hip-hop), TR-909 (1983 — house, techno), TR-606 (1981 — acid, electro), LinnDrum (1982 — 80s pop, funk; an approximation of its sampled acoustic drums) and the MPC factory kit. A full load puts the 16 sounds on bank A in the same layout as the factory kit (PAD1 kick, PAD2 snare, PAD3 closed hat, PAD4 open hat, PAD5 clap…), writes its grooves into the first sequences (three, or four on the 909), sets the tempo and swing, and builds a song chain from them. The real 909 and 606 spent several slots on louder or longer copies of the same drums; here those pads hold the factory kit’s chord hit instead, in five keys (Cm9, Ebm9, Fm9, Gm9, Bbm9) so a row of pads plays a progression. The 909 adds a fourth groove, Deep Stabs, that uses them.',
+    text: 'Classic drum machines, rebuilt by synthesis (no original ROM samples): TR-808 (1980 — electro, Miami bass, hip-hop), TR-909 (1983 — house, techno), TR-606 (1981 — acid, electro), LinnDrum (1982 — 80s pop, funk; an approximation of its sampled acoustic drums) and the MPC factory kit. A full load puts the 16 sounds on bank A in the same layout as the factory kit (PAD1 kick, PAD2 snare, PAD3 closed hat, PAD4 open hat, PAD5 clap…), writes its grooves into the first sequences (three, or four on the 909), sets the tempo and swing, and builds a song chain from them. Most grooves come with a TB-303 bassline, and the 303’s knobs are set to suit the machine. The real 909 and 606 spent several slots on louder or longer copies of the same drums; here those pads hold the factory kit’s chord hit instead, in five keys (Cm9, Ebm9, Fm9, Gm9, Bbm9) so a row of pads plays a progression. The 909 adds a fourth groove, Deep Stabs, that uses them.',
     fields: [
       ['Machine', 'Which drum machine'],
       [
@@ -529,7 +624,7 @@ export const SEQUENCER: Control[] = [
   {
     id: 'seq-machines',
     name: 'Drum machines',
-    text: 'One click loads a classic drum machine — TR-808, TR-909, TR-606, LinnDrum or the MPC factory kit — onto bank A, with matching grooves in the first sequences, the right tempo and a song chain. If you already have beats, the button turns orange: click again to confirm. For the sounds only, use MODE → PAD4 (MACHINE) → Load: KIT ONLY.',
+    text: 'One click loads a classic drum machine — TR-808, TR-909, TR-606, LinnDrum or the MPC factory kit — onto bank A, with matching grooves (most with a TB-303 bassline) in the first sequences, the right tempo and a song chain. If you already have beats, the button turns orange: click again to confirm. For the sounds only, use MODE → PAD4 (MACHINE) → Load: KIT ONLY.',
   },
   {
     id: 'seq-patterns',
@@ -613,6 +708,31 @@ export const SEQUENCER: Control[] = [
     name: '◀ shift ▶',
     text: 'Move the selected track one step earlier or later.',
   },
+  {
+    id: 'seq-303',
+    name: 'TB-303 lane',
+    text: 'The bassline of this sequence, one column per step. Click a row to place a note at that pitch (C at the bottom, C an octave up at the top), drag to draw several, click a note again to remove it. Clicking also moves the TB-303 write step there.',
+  },
+  {
+    id: 'seq-303-octave',
+    name: 'Oct',
+    text: 'Click a step to cycle its octave: normal → ▲ up → ▼ down.',
+  },
+  {
+    id: 'seq-303-accent',
+    name: 'Acc',
+    text: 'Accent this step — louder and brighter (set by the 303’s ACCENT knob).',
+  },
+  {
+    id: 'seq-303-slide',
+    name: 'Slide',
+    text: 'Slide from this note into the next: the pitch glides and the note is held through with no new attack. Needs a note on the next step.',
+  },
+  {
+    id: 'seq-303-mute',
+    name: 'M / S (TB-303)',
+    text: 'Mute or solo the 303. Soloing the 303 silences the drums; soloing a drum track silences the 303 unless it is soloed too.',
+  },
   { id: 'guide', name: 'GUIDE', text: 'Open this guide. Shortcut: ? key.' },
 ]
 
@@ -641,6 +761,17 @@ export const WORKFLOWS: Workflow[] = [
       'Press PLAY START — the House groove plays at 124 BPM. Sequence 02 is Techno, 03 a snare build and 04 Deep Stabs, which plays the chord hits on PAD12–16.',
       'Turn Song mode ON to hear the grooves arranged into a track.',
       'Mix machines: MODE → PAD4, pick the TR-808, set Load to KIT ONLY, switch PAD BANK to B and press LOAD — now bank B has 808 sounds to layer with your 909 beat.',
+    ],
+  },
+  {
+    title: 'Write an acid bassline',
+    steps: [
+      'Load the TR-606 from the Drum machines strip — its Acid groove comes with a 303 line. Press PLAY START.',
+      'While it plays, turn CUT OFF FREQ and RESONANCE on the TB-303, then ENV MOD and DECAY. That sweep is the acid sound.',
+      'For your own line, pick an empty sequence and draw notes in the TB-303 lane: click a pitch row on each step you want a note.',
+      'Click Acc under a step to accent it and Slide to glide into the next note. ▲/▼ in the Oct row moves a note an octave.',
+      'Or write it on the 303: press WRITE, click the first step in the lane, then play keys. REST leaves a gap, and the latched ACCENT/SLIDE/UP/DOWN buttons apply to each note you enter.',
+      'Stuck? RANDOM writes a fresh line in the chosen scale — press it until something clicks, then edit.',
     ],
   },
   {

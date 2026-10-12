@@ -1,6 +1,8 @@
 import { create } from 'zustand'
 import {
   clonePattern,
+  createAcid,
+  createBassLine,
   createFx,
   createMaster,
   createPad,
@@ -9,6 +11,8 @@ import {
   createTrack,
 } from './defaults'
 import {
+  type AcidSettings,
+  type AcidStep,
   type Division,
   type FxSettings,
   type LcdMode,
@@ -60,6 +64,8 @@ export interface MpcState {
   solos: boolean[]
   fx: FxSettings
   master: MasterSettings
+  /** TB-303 panel settings (the bassline itself lives in each pattern) */
+  acid: AcidSettings
   qlinks: QLinkSlider[]
   undoStack: { index: number; pattern: Pattern }[]
   message: string | null
@@ -96,6 +102,12 @@ interface MpcActions {
   doublePattern: () => void
   pushUndo: () => void
   undo: () => void
+  setAcid: (partial: Partial<AcidSettings>) => void
+  setBassStep: (step: number, value: Partial<AcidStep>) => void
+  /** Replace the current pattern's bassline (random, clear, machine grooves) */
+  setBassLine: (steps: AcidStep[]) => void
+  /** Rotate the bassline within the pattern length */
+  shiftBass: (dir: number) => void
   setFx: (partial: Partial<FxSettings>) => void
   setMaster: (partial: Partial<MasterSettings>) => void
   setQLink: (index: number, partial: Partial<QLinkSlider>) => void
@@ -113,6 +125,8 @@ export interface ProjectData {
   bpm: number
   fx: FxSettings
   master: MasterSettings
+  /** Absent in projects saved before the TB-303 existed */
+  acid?: AcidSettings
   qlinks: QLinkSlider[]
   mutes: boolean[]
 }
@@ -150,6 +164,7 @@ function initialState(): MpcState {
     solos: Array(PAD_COUNT).fill(false),
     fx: createFx(),
     master: createMaster(),
+    acid: createAcid(),
     qlinks: createQLinks(),
     undoStack: [],
     message: null,
@@ -293,7 +308,11 @@ export const useMpc = create<MpcState & MpcActions>()((set, get) => {
 
     clearPattern: () => {
       get().pushUndo()
-      updatePattern((p) => ({ ...p, tracks: p.tracks.map(() => createTrack()) }))
+      updatePattern((p) => ({
+        ...p,
+        tracks: p.tracks.map(() => createTrack()),
+        bass: createBassLine(),
+      }))
     },
 
     copyPatternTo: (target) =>
@@ -318,6 +337,9 @@ export const useMpc = create<MpcState & MpcActions>()((set, get) => {
             i >= pat.length && i < pat.length * 2 ? { ...track[i - pat.length]! } : step,
           ),
         ),
+        bass: pat.bass.map((step, i) =>
+          i >= pat.length && i < pat.length * 2 ? { ...pat.bass[i - pat.length]! } : step,
+        ),
       }))
     },
 
@@ -337,6 +359,32 @@ export const useMpc = create<MpcState & MpcActions>()((set, get) => {
         patterns[last.index] = last.pattern
         return { patterns, undoStack: s.undoStack.slice(0, -1), currentPattern: last.index }
       }),
+
+    setAcid: (partial) => set((s) => ({ acid: { ...s.acid, ...partial } })),
+
+    setBassStep: (step, value) =>
+      updatePattern((p) => {
+        const bass = p.bass.slice()
+        bass[step] = { ...bass[step]!, ...value }
+        return { ...p, bass }
+      }),
+
+    setBassLine: (steps) => {
+      get().pushUndo()
+      updatePattern((p) => ({ ...p, bass: steps.map((step) => ({ ...step })) }))
+    },
+
+    shiftBass: (dir) => {
+      get().pushUndo()
+      updatePattern((p) => {
+        const n = p.length
+        const active = p.bass.slice(0, n)
+        return {
+          ...p,
+          bass: [...active.map((_, i) => active[(((i - dir) % n) + n) % n]!), ...p.bass.slice(n)],
+        }
+      })
+    },
 
     setFx: (partial) => set((s) => ({ fx: { ...s.fx, ...partial } })),
     setMaster: (partial) => set((s) => ({ master: { ...s.master, ...partial } })),
@@ -373,11 +421,12 @@ export const useMpc = create<MpcState & MpcActions>()((set, get) => {
         // Merge over defaults so projects saved by older versions pick up new parameters
         pads: project.pads.map((p) => ({ ...createPad(), ...p })),
         samples: project.samples,
-        patterns: project.patterns,
+        patterns: project.patterns.map((p) => ({ ...p, bass: p.bass ?? createBassLine() })),
         song: project.song,
         bpm: project.bpm,
         fx: { ...createFx(), ...project.fx },
         master: { ...createMaster(), ...project.master },
+        acid: { ...createAcid(), ...project.acid },
         qlinks: project.qlinks,
         mutes: project.mutes,
         currentPattern: 0,
@@ -396,6 +445,7 @@ export function projectSnapshot(s: MpcState): ProjectData {
     bpm: s.bpm,
     fx: s.fx,
     master: s.master,
+    acid: s.acid,
     qlinks: s.qlinks,
     mutes: s.mutes,
   }

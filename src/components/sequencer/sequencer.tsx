@@ -15,6 +15,7 @@ import {
   STEP_RESOLUTIONS,
 } from '../../state/types'
 import { openSoundPicker } from '../sound-picker/picker-store'
+import { AcidLane } from './acid-lane'
 import s from './sequencer.module.css'
 
 const LENGTHS = [8, 16, 24, 32, 40, 48, 56, 64]
@@ -439,6 +440,7 @@ function Grid() {
           ))}
           <Playhead length={length} />
         </div>
+        <AcidLane />
         <VelocityLane />
         <TuneLane />
       </div>

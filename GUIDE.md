@@ -22,10 +22,11 @@ That strip also describes any control you hover over.
 2. Press PLAY START (or Space). A demo beat plays in Sequence 01; the green column is the playhead.
 3. Click empty cells in the Pattern Sequencer to add hits; click lit cells to remove them. Drag to paint.
 4. Press OVER DUB while playing and tap pads in time — your hits are written into the pattern.
-5. Want a classic sound? Click TR-808, TR-909, TR-606 or LinnDrum in the Drum machines strip — the kit and matching grooves load together.
-6. Drag a WAV/MP3 from your computer onto a pad to replace its sound.
-7. Press MODE, then PAD6 (TRIM) to cut the sound, or PAD7 (PROGRAM) to tune and shape it.
-8. Your work autosaves in this browser. MODE → PAD3 (SAVE) exports a project file or a WAV.
+5. Want a classic sound? Click TR-808, TR-909, TR-606 or LinnDrum in the Drum machines strip — the kit, matching grooves and a TB-303 bassline load together.
+6. The TB-303 under the MPC plays a bassline in every sequence: draw notes in the TB-303 lane of the sequencer, or hit RANDOM on the 303 for an instant acid line.
+7. Drag a WAV/MP3 from your computer onto a pad to replace its sound.
+8. Press MODE, then PAD6 (TRIM) to cut the sound, or PAD7 (PROGRAM) to tune and shape it.
+9. Your work autosaves in this browser. MODE → PAD3 (SAVE) exports a project file or a WAV.
 
 - Audio starts on your first click or key press — browsers block sound until you interact with the page.
 - Use Chrome or Edge for MIDI controllers (Web MIDI). Everything else works in Firefox and Safari too.
@@ -75,6 +76,30 @@ That strip also describes any control you hover over.
 - **OVER DUB** — Record on top of what is already there. Hits snap to the nearest step (or keep their exact feel with T.C. off).
 - **STOP** — Stop playback and recording. Press again while stopped to silence every ringing sound (panic).
 - **PLAY** — Play from the located position (see LOCATE).
+
+### TB-303 bass line (under the MPC)
+
+- **TB-303** — A monophonic acid bass synth. Each sequence has its own 303 line, which plays in time with the drums, follows the sequence length and swing, and is saved and exported with the project. Edit it in the TB-303 lane of the sequencer or with the keyboard below.
+- **WAVEFORM** — Sawtooth (buzzy, classic acid) or square (hollow, rounder).
+- **TUNING** — Transposes the whole bassline ±12 semitones. Double-click resets it.
+- **CUT OFF FREQ** — Where the low-pass filter sits. Low = dark and rubbery, high = bright. Sweep it while the pattern plays — that is the acid sound.
+- **RESONANCE** — Boosts the filter at the cutoff for the squelchy, whistling tone. High settings with ENV MOD make the classic “wow”.
+- **ENV MOD** — How far each note opens the filter before it closes back to the cutoff.
+- **DECAY** — How quickly the filter closes after each note. Accented notes always use a short decay, like the hardware.
+- **ACCENT** — How much louder and brighter accented steps are.
+- **DRIVE** — Overdrive after the filter, from warm to distorted.
+- **DELAY** — Send the 303 to the MPC’s delay (timing and feedback are set on the EFFECT screen).
+- **REVERB** — Send the 303 to the MPC’s reverb.
+- **VOLUME** — Level of the 303 in the mix.
+- **Keyboard** — Play the 303 (C to C, 13 keys). With WRITE on, each key stores a note at the write step and moves on one step.
+- **DOWN / UP** — Octave for the notes you play or write — lit = one octave down or up.
+- **ACCENT (button)** — When lit, notes you write are accented.
+- **SLIDE (button)** — When lit, notes you write slide: the pitch glides into the next note and the note is held through, with no new attack.
+- **WRITE** — Step-write mode, like the real 303: play keys to enter the line note by note. The write step is outlined in the sequencer; click a step there to jump to it.
+- **◀ STEP ▶ / display** — Move the write step. The display shows the step and the note stored there.
+- **REST** — In WRITE mode, store a rest and move on one step.
+- **RANDOM / SCALE** — Write a random acid line in the chosen scale over the whole sequence (UNDO SEQ brings the old one back).
+- **CLEAR** — Erase this sequence’s bassline.
 
 ## Pads and the MODE screens
 
@@ -350,7 +375,7 @@ Chain sequences. With Song ON, PLAY runs through the steps in order and loops.
 
 *Open:* MODE → PAD4, or the Drum machines strip in the sequencer
 
-Classic drum machines, rebuilt by synthesis (no original ROM samples): TR-808 (1980 — electro, Miami bass, hip-hop), TR-909 (1983 — house, techno), TR-606 (1981 — acid, electro), LinnDrum (1982 — 80s pop, funk; an approximation of its sampled acoustic drums) and the MPC factory kit. A full load puts the 16 sounds on bank A in the same layout as the factory kit (PAD1 kick, PAD2 snare, PAD3 closed hat, PAD4 open hat, PAD5 clap…), writes its grooves into the first sequences (three, or four on the 909), sets the tempo and swing, and builds a song chain from them. The real 909 and 606 spent several slots on louder or longer copies of the same drums; here those pads hold the factory kit’s chord hit instead, in five keys (Cm9, Ebm9, Fm9, Gm9, Bbm9) so a row of pads plays a progression. The 909 adds a fourth groove, Deep Stabs, that uses them.
+Classic drum machines, rebuilt by synthesis (no original ROM samples): TR-808 (1980 — electro, Miami bass, hip-hop), TR-909 (1983 — house, techno), TR-606 (1981 — acid, electro), LinnDrum (1982 — 80s pop, funk; an approximation of its sampled acoustic drums) and the MPC factory kit. A full load puts the 16 sounds on bank A in the same layout as the factory kit (PAD1 kick, PAD2 snare, PAD3 closed hat, PAD4 open hat, PAD5 clap…), writes its grooves into the first sequences (three, or four on the 909), sets the tempo and swing, and builds a song chain from them. Most grooves come with a TB-303 bassline, and the 303’s knobs are set to suit the machine. The real 909 and 606 spent several slots on louder or longer copies of the same drums; here those pads hold the factory kit’s chord hit instead, in five keys (Cm9, Ebm9, Fm9, Gm9, Bbm9) so a row of pads plays a progression. The 909 adds a fourth groove, Deep Stabs, that uses them.
 
 | Field | What it does |
 |---|---|
@@ -412,7 +437,7 @@ Pick which parameter each Q-Link slider controls.
 The panel to the right of the MPC.
 
 - **REC / OVERDUB / STOP / PLAY** — Same as the transport buttons on the MPC. PLAY here always starts from step 1.
-- **Drum machines** — One click loads a classic drum machine — TR-808, TR-909, TR-606, LinnDrum or the MPC factory kit — onto bank A, with matching grooves in the first sequences, the right tempo and a song chain. If you already have beats, the button turns orange: click again to confirm. For the sounds only, use MODE → PAD4 (MACHINE) → Load: KIT ONLY.
+- **Drum machines** — One click loads a classic drum machine — TR-808, TR-909, TR-606, LinnDrum or the MPC factory kit — onto bank A, with matching grooves (most with a TB-303 bassline) in the first sequences, the right tempo and a song chain. If you already have beats, the button turns orange: click again to confirm. For the sounds only, use MODE → PAD4 (MACHINE) → Load: KIT ONLY.
 - **Sequence buttons 01–16** — Pick a sequence. A dot means it has hits. While playing, the choice blinks and switches at the end of the loop.
 - **Steps 8–64** — Sequence length. With 1/16 resolution, 16 steps = 1 bar and 64 steps = 4 bars.
 - **Resolution** — Note value of one step: 1/8, 1/16, 1/16T (triplets) or 1/32.
@@ -435,6 +460,11 @@ The panel to the right of the MPC.
 - **Velocity lane** — Velocities of the selected track. Drag up/down across the bars to draw them.
 - **Tune lane** — Per-step pitch automation for the selected track, in semitones on top of the pad’s own tune. Drag up/down across hits to draw pitches (centre line = 0), scroll over a hit for exact ±1 steps, double-click a hit to reset it. ±12 / ±24 sets the drawing range; Reset clears the whole track. Pitched hits show a small ▲/▼ marker in the grid.
 - **◀ shift ▶** — Move the selected track one step earlier or later.
+- **TB-303 lane** — The bassline of this sequence, one column per step. Click a row to place a note at that pitch (C at the bottom, C an octave up at the top), drag to draw several, click a note again to remove it. Clicking also moves the TB-303 write step there.
+- **Oct** — Click a step to cycle its octave: normal → ▲ up → ▼ down.
+- **Acc** — Accent this step — louder and brighter (set by the 303’s ACCENT knob).
+- **Slide** — Slide from this note into the next: the pitch glides and the note is held through with no new attack. Needs a note on the next step.
+- **M / S (TB-303)** — Mute or solo the 303. Soloing the 303 silences the drums; soloing a drum track silences the 303 unless it is soloed too.
 - **GUIDE** — Open this guide. Shortcut: ? key.
 
 ## How to…
@@ -445,6 +475,15 @@ The panel to the right of the MPC.
 2. Press PLAY START — the House groove plays at 124 BPM. Sequence 02 is Techno, 03 a snare build and 04 Deep Stabs, which plays the chord hits on PAD12–16.
 3. Turn Song mode ON to hear the grooves arranged into a track.
 4. Mix machines: MODE → PAD4, pick the TR-808, set Load to KIT ONLY, switch PAD BANK to B and press LOAD — now bank B has 808 sounds to layer with your 909 beat.
+
+### Write an acid bassline
+
+1. Load the TR-606 from the Drum machines strip — its Acid groove comes with a 303 line. Press PLAY START.
+2. While it plays, turn CUT OFF FREQ and RESONANCE on the TB-303, then ENV MOD and DECAY. That sweep is the acid sound.
+3. For your own line, pick an empty sequence and draw notes in the TB-303 lane: click a pitch row on each step you want a note.
+4. Click Acc under a step to accent it and Slide to glide into the next note. ▲/▼ in the Oct row moves a note an octave.
+5. Or write it on the 303: press WRITE, click the first step in the lane, then play keys. REST leaves a gap, and the latched ACCENT/SLIDE/UP/DOWN buttons apply to each note you enter.
+6. Stuck? RANDOM writes a fresh line in the chosen scale — press it until something clicks, then edit.
 
 ### Change the sound on a pad
 

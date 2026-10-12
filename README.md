@@ -56,6 +56,12 @@ offline (`src/audio/machines/`). One click loads a kit with matching grooves, te
 KIT ONLY loads just the sounds onto any bank. Slots the 909/606 spent on duplicate voices carry the
 factory chord hit in five keys instead.
 
+**TB-303** — a monophonic acid bass synth under the MPC (`src/audio/acid.ts`): saw/square into a
+resonant 24 dB low-pass with envelope, accent, slide (glide + held gate) and drive. Every sequence
+carries its own 303 line, edited in the sequencer's TB-303 lane (note roll + octave/accent/slide
+rows) or by step-write from the 303 keyboard; RANDOM writes an acid line in a chosen scale. It plays
+with the drums, follows length/swing/song mode, mutes/solos, and is included in WAV bounces.
+
 **Sound browser** — ⇄ on a sequencer row, right-click a pad, or LOAD → BROWSE: pick any project
 sample or any drum-machine voice for a pad, hearing each as you choose; search across machines.
 

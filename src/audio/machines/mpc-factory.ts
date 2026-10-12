@@ -260,6 +260,7 @@ export const MPC_FACTORY: MachineDef = {
     {
       name: 'Boom Bap',
       length: 16,
+      bass: 'C . . . . . . C . . D# . . . . .',
       tracks: {
         BD: 'x......x..x.....',
         SD: '....X.......X...',
@@ -269,4 +270,5 @@ export const MPC_FACTORY: MachineDef = {
     },
   ],
   song: [0],
+  acid: { cutoff: 0.28, resonance: 0.5, envMod: 0.45, decay: 0.45 },
 }

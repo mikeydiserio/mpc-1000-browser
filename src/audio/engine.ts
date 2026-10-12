@@ -1,4 +1,6 @@
-import type { FxSettings, PadParams } from '../state/types'
+import { createAcid } from '../state/defaults'
+import type { AcidSettings, AcidStep, FxSettings, PadParams } from '../state/types'
+import { AcidVoice } from './acid'
 import { createMixChain, type MixChain } from './mix-chain'
 import { scheduleClick, type TriggerOptions, VoicePool } from './voice-pool'
 
@@ -14,6 +16,8 @@ class Engine {
   private reversed = new Map<string, AudioBuffer>()
   private pending: { fx: FxSettings; bpm: number; volume: number } | null = null
   private auditioning: AudioBufferSourceNode | null = null
+  private acid: AcidVoice | null = null
+  private acidSettings: AcidSettings = createAcid()
 
   /** Returns a running context. Safe to call from any user-gesture handler. */
   ensure(): AudioContext {
@@ -22,6 +26,7 @@ class Engine {
       this.ctx = ctx
       this.chain = createMixChain(ctx, ctx.destination)
       this.pool = new VoicePool(ctx, this.chain, (id, rev) => this.getBuffer(id, rev))
+      this.acid = new AcidVoice(ctx, this.chain, this.acidSettings)
       if (this.pending) {
         this.chain.update(this.pending.fx, this.pending.bpm)
         this.chain.setVolume(this.pending.volume)
@@ -83,6 +88,28 @@ class Engine {
   stopAll() {
     if (!this.ctx) return
     this.pool?.stopAll(this.ctx.currentTime)
+    this.acid?.release(this.ctx.currentTime)
+  }
+
+  // ─── TB-303 ──────────────────────────────────────────────────────────────
+
+  updateAcid(settings: AcidSettings) {
+    this.acidSettings = settings
+    this.acid?.apply(settings)
+  }
+
+  acidNote(step: AcidStep, when: number, gate: number, holdNext: boolean) {
+    this.ensure()
+    this.acid?.note(when, step, gate, holdNext)
+  }
+
+  acidRest(when: number) {
+    this.acid?.rest(when)
+  }
+
+  acidRelease(when?: number) {
+    if (!this.ctx) return
+    this.acid?.release(when ?? this.ctx.currentTime)
   }
 
   /** Play a buffer straight to the master bus (sound browser preview); cuts the last preview. */

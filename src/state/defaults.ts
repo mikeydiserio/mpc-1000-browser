@@ -1,5 +1,7 @@
 import { DECAY_OFF } from '../audio/voice-pool'
 import {
+  type AcidSettings,
+  type AcidStep,
   type FxSettings,
   MAX_STEPS,
   type MasterSettings,
@@ -43,6 +45,14 @@ export function createTrack(): Step[] {
   return Array.from({ length: MAX_STEPS }, () => ({ on: false, velocity: 100 }))
 }
 
+export function createAcidStep(): AcidStep {
+  return { on: false, note: 0, octave: 0, accent: false, slide: false }
+}
+
+export function createBassLine(): AcidStep[] {
+  return Array.from({ length: MAX_STEPS }, createAcidStep)
+}
+
 export function createPattern(index: number): Pattern {
   return {
     name: `Sequence${String(index + 1).padStart(2, '0')}`,
@@ -50,6 +60,7 @@ export function createPattern(index: number): Pattern {
     resolution: '1/16',
     swing: 50,
     tracks: Array.from({ length: PAD_COUNT }, createTrack),
+    bass: createBassLine(),
   }
 }
 
@@ -57,6 +68,25 @@ export function clonePattern(pattern: Pattern): Pattern {
   return {
     ...pattern,
     tracks: pattern.tracks.map((track) => track.map((step) => ({ ...step }))),
+    bass: pattern.bass.map((step) => ({ ...step })),
+  }
+}
+
+export function createAcid(): AcidSettings {
+  return {
+    wave: 'saw',
+    tune: 0,
+    cutoff: 0.35,
+    resonance: 0.7,
+    envMod: 0.55,
+    decay: 0.4,
+    accent: 0.6,
+    drive: 0.25,
+    volume: 0.7,
+    sendDelay: 0.15,
+    sendReverb: 0.05,
+    mute: false,
+    solo: false,
   }
 }
 

@@ -209,6 +209,7 @@ export const TR909: MachineDef = {
     {
       name: 'House',
       length: 16,
+      bass: 'C . . C . . C . . . G . . A# . .',
       tracks: {
         BD: 'X...X...X...X...',
         CP: '....X.......X...',
@@ -219,6 +220,7 @@ export const TR909: MachineDef = {
     {
       name: 'Techno',
       length: 16,
+      bass: 'C . C^ . C . C^ . C . C^ . D# . C^ .',
       tracks: {
         BD: 'X...X...X...X..x',
         CP: '....X.......X...',
@@ -242,6 +244,7 @@ export const TR909: MachineDef = {
     {
       name: 'Deep Stabs',
       length: 32,
+      bass: 'C . . C . . C . A#v . . A#v . . A#v . F . . F . . F . G . . G . . G^~ G',
       tracks: {
         BD: 'X...X...X...X...X...X...X...X...',
         CP: '....X.......X.......X.......X...',
@@ -255,4 +258,5 @@ export const TR909: MachineDef = {
     },
   ],
   song: [0, 0, 1, 1, 3, 3, 2],
+  acid: { cutoff: 0.33, resonance: 0.62, envMod: 0.5, decay: 0.4 },
 }

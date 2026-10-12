@@ -106,6 +106,7 @@ export const TR606: MachineDef = {
     {
       name: 'Acid',
       length: 16,
+      bass: 'C> C^ . C D#~ F . C^> . G~ G# . C C^~ C^ D#',
       tracks: {
         BD: 'X.....x.X.....x.',
         SD: '....X.......X...',
@@ -117,6 +118,7 @@ export const TR606: MachineDef = {
     {
       name: 'Electro 606',
       length: 16,
+      bass: 'C> . . C . . A#v . C> . . C D# . Cv~ C',
       tracks: {
         BD: 'X..X..X...X.....',
         SD: '....X..o....X...',
@@ -128,6 +130,7 @@ export const TR606: MachineDef = {
     {
       name: 'Tom Fill',
       length: 16,
+      bass: 'C> . C . C . C . G . G . F . D# .',
       tracks: {
         BD: 'X.......X.......',
         SD: '....x.......xXxX',
@@ -138,4 +141,5 @@ export const TR606: MachineDef = {
     },
   ],
   song: [0, 0, 1, 0, 2],
+  acid: { cutoff: 0.3, resonance: 0.82, envMod: 0.65, decay: 0.35, drive: 0.35 },
 }

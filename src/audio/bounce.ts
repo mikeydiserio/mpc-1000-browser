@@ -1,4 +1,6 @@
 import type { MpcState } from '../state/store'
+import type { AcidStep } from '../state/types'
+import { ACID_GATE, AcidVoice } from './acid'
 import { engine } from './engine'
 import { createMixChain } from './mix-chain'
 import { stepSeconds, swingOffset } from './timing'
@@ -16,13 +18,33 @@ export async function bounce(state: MpcState, loops: number): Promise<Blob> {
   const order =
     state.songMode && state.song.length ? state.song : Array(loops).fill(state.currentPattern)
   const events: { pad: number; time: number; velocity: number; gate: number; pitch: number }[] = []
-  const anySolo = state.solos.some(Boolean)
+  const bass: { time: number; step: AcidStep; gate: number; hold: boolean }[] = []
+  const anySolo = state.acid.solo || state.solos.some(Boolean)
+  const bassAudible = !state.acid.mute && (state.acid.solo || !state.solos.some(Boolean))
   let t = 0
-  for (const index of order) {
+  order.forEach((index, n) => {
     const pattern = state.patterns[index]!
     const stepDur = stepSeconds(pattern.resolution, state.bpm)
     for (let step = 0; step < pattern.length; step++) {
       const at = t + step * stepDur + swingOffset(step, pattern.swing, stepDur)
+      const note = pattern.bass[step]!
+      if (bassAudible && note.on) {
+        // The step after this one, across the pattern boundary (nothing after the last)
+        const following =
+          step + 1 < pattern.length
+            ? pattern.bass[step + 1]
+            : order[n + 1] === undefined
+              ? undefined
+              : state.patterns[order[n + 1]!]!.bass[0]
+        bass.push({
+          time: at,
+          step: note,
+          gate: stepDur * ACID_GATE,
+          hold: note.slide && !!following?.on,
+        })
+      } else {
+        bass.push({ time: at, step: note, gate: 0, hold: false })
+      }
       pattern.tracks.forEach((track, pad) => {
         const st = track[step]!
         if (!st.on || state.mutes[pad] || (anySolo && !state.solos[pad])) return
@@ -36,7 +58,7 @@ export async function bounce(state: MpcState, loops: number): Promise<Blob> {
       })
     }
     t += pattern.length * stepDur
-  }
+  })
 
   const ctx = new OfflineAudioContext(2, Math.ceil((t + TAIL) * RATE), RATE)
   const chain = createMixChain(ctx, ctx.destination)
@@ -50,6 +72,11 @@ export async function bounce(state: MpcState, loops: number): Promise<Blob> {
       gate: e.gate,
       pitchOffset: e.pitch,
     })
+  }
+  const acid = new AcidVoice(ctx, chain, state.acid)
+  for (const b of bass) {
+    if (b.gate > 0) acid.note(b.time + 0.01, b.step, b.gate, b.hold)
+    else acid.rest(b.time + 0.01)
   }
   const rendered = await ctx.startRendering()
   return new Blob([encodeWav(rendered)], { type: 'audio/wav' })

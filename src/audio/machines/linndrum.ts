@@ -275,6 +275,7 @@ export const LINNDRUM: MachineDef = {
     {
       name: '80s Pop',
       length: 16,
+      bass: 'C . . C . . C . A#v . . A#v . . A#v .',
       tracks: {
         BD: 'X......x..X.....',
         SD: '....X.......X...',
@@ -286,6 +287,7 @@ export const LINNDRUM: MachineDef = {
     {
       name: 'Funk',
       length: 16,
+      bass: 'C . C^ . . C . D# . . F . F# G . .',
       tracks: {
         BD: 'X..x..x...X..x..',
         SD: '....X..o.o..X..o',
@@ -311,4 +313,5 @@ export const LINNDRUM: MachineDef = {
     },
   ],
   song: [0, 0, 1, 0, 2],
+  acid: { wave: 'square', cutoff: 0.3, resonance: 0.3, envMod: 0.35, decay: 0.4, drive: 0.1 },
 }

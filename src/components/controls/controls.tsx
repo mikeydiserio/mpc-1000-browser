@@ -86,10 +86,22 @@ interface KnobProps {
   onChange: (v: number) => void
   defaultValue?: number
   hint?: string
+  /** 'black' = the TB-303's black knobs on a silver panel */
+  tone?: 'chrome' | 'black'
+  /** Spoken value, e.g. "+3 semitones" (defaults to a percentage) */
+  valueText?: string
 }
 
-/** Chrome rotary pot, 270° sweep. Drag vertically, scroll, or use arrow keys. */
-export function Knob({ label, value, onChange, defaultValue = 0.7, hint }: KnobProps) {
+/** Rotary pot, 270° sweep. Drag vertically, scroll, or use arrow keys. */
+export function Knob({
+  label,
+  value,
+  onChange,
+  defaultValue = 0.7,
+  hint,
+  tone = 'chrome',
+  valueText,
+}: KnobProps) {
   const ref = useRef<HTMLDivElement>(null)
   const drag = useRef<{ y: number; v: number } | null>(null)
   const valueRef = useRef(value)
@@ -111,7 +123,7 @@ export function Knob({ label, value, onChange, defaultValue = 0.7, hint }: KnobP
   }, [])
 
   return (
-    <div className={s.knobWrap} data-hint={hint}>
+    <div className={s.knobWrap} data-hint={hint} data-tone={tone}>
       <span className={s.silk}>{label}</span>
       <div
         ref={ref}
@@ -123,6 +135,7 @@ export function Knob({ label, value, onChange, defaultValue = 0.7, hint }: KnobP
         aria-valuemin={0}
         aria-valuemax={100}
         aria-valuenow={Math.round(value * 100)}
+        aria-valuetext={valueText}
         onPointerDown={(e) => {
           drag.current = { y: e.clientY, v: value }
           e.currentTarget.setPointerCapture(e.pointerId)

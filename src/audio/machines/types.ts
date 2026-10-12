@@ -1,4 +1,4 @@
-import type { PadParams, StepResolution } from '../../state/types'
+import type { AcidSettings, PadParams, StepResolution } from '../../state/types'
 
 export interface MachineVoice {
   /** Short code used in pattern definitions, e.g. 'BD' */
@@ -20,6 +20,11 @@ export interface MachinePattern {
   length: number
   resolution?: StepResolution
   tracks: Record<string, string>
+  /**
+   * TB-303 line, one space-separated token per step: '.' rest, otherwise a note C … B (C' =
+   * the 13th key) followed by any of '^' octave up, 'v' octave down, '>' accent, '~' slide.
+   */
+  bass?: string
 }
 
 export interface MachineDef {
@@ -34,4 +39,6 @@ export interface MachineDef {
   patterns: MachinePattern[]
   /** Song chain over the patterns above (indexes) */
   song: number[]
+  /** TB-303 panel settings that suit this machine's basslines */
+  acid?: Partial<AcidSettings>
 }

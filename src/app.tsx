@@ -8,6 +8,7 @@ import { Mpc } from './components/mpc/mpc'
 import { Sequencer } from './components/sequencer/sequencer'
 import { usePicker } from './components/sound-picker/picker-store'
 import { SoundPicker } from './components/sound-picker/sound-picker'
+import { Tb303 } from './components/tb303/tb303'
 import { Guide } from './guide/guide'
 import { openGuide, useGuide } from './guide/guide-store'
 import { HintBar } from './guide/hint-bar'
@@ -30,6 +31,7 @@ export function App() {
         if (x.fx !== prev.fx || x.bpm !== prev.bpm || x.master.volume !== prev.master.volume) {
           engine.updateMix(x.fx, x.bpm, x.master.volume)
         }
+        if (x.acid !== prev.acid) engine.updateAcid(x.acid)
       }),
     [],
   )
@@ -39,7 +41,10 @@ export function App() {
   return (
     <main className={s.app}>
       <div className={s.stage} data-ready={ready || undefined}>
-        <Mpc />
+        <div className={s.left}>
+          <Mpc />
+          <Tb303 />
+        </div>
         <Sequencer />
       </div>
       {ready ? null : <p className={s.boot}>Loading sounds…</p>}
@@ -64,6 +69,7 @@ function boot() {
     if (!restored) saveNow()
     const x = useMpc.getState()
     engine.updateMix(x.fx, x.bpm, x.master.volume)
+    engine.updateAcid(x.acid)
     const inputs = await initMidi()
     if (inputs.length) bindInput(useMpc.getState().midiInputId)
   })()

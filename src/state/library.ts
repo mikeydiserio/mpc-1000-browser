@@ -117,6 +117,7 @@ export function startAutosave() {
       state.samples === prev.samples &&
       state.fx === prev.fx &&
       state.master === prev.master &&
+      state.acid === prev.acid &&
       state.bpm === prev.bpm &&
       state.song === prev.song &&
       state.qlinks === prev.qlinks &&
