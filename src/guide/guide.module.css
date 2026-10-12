@@ -1,0 +1,260 @@
+.dialog {
+  width: min(1120px, 96vw);
+  max-width: none;
+  height: min(900px, 92dvh);
+  max-height: none;
+  padding: 0;
+  border: 0;
+  border-radius: 14px;
+  color: var(--silk);
+  background: #121315;
+  box-shadow:
+    0 40px 80px rgba(0, 0, 0, 0.8),
+    0 0 0 1px #000,
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.dialog::backdrop {
+  background: rgba(0, 0, 0, 0.72);
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 24px;
+  border-bottom: 1px solid #222428;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 20px;
+  font-style: italic;
+  font-weight: 800;
+  text-wrap: balance;
+}
+
+.header p {
+  margin: 2px 0 0;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--silk-dim);
+}
+
+.close,
+.showMe {
+  font-family: var(--font-silk);
+  font-weight: 700;
+  color: #26282b;
+  border: 0;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #cfd1d3 0%, #a6a9ac 100%);
+  box-shadow: 0 2px 0 #3f4144;
+  cursor: pointer;
+}
+
+.close {
+  padding: 8px 14px;
+  font-size: 12px;
+}
+
+.close:focus-visible,
+.showMe:focus-visible,
+.toc a:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.body {
+  display: grid;
+  grid-template-columns: 180px minmax(0, 1fr);
+  flex: 1;
+  min-height: 0;
+}
+
+.toc {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 18px 12px;
+  border-right: 1px solid #222428;
+}
+
+.toc a {
+  padding: 7px 10px;
+  font-size: 13px;
+  color: var(--silk);
+  text-decoration: none;
+  border-radius: 4px;
+}
+
+.toc a:hover {
+  color: #1b2610;
+  background: #b5cd7d;
+}
+
+.content {
+  overflow-y: auto;
+  padding: 8px 32px 48px;
+  font-size: 14px;
+  line-height: 1.6;
+  scroll-behavior: smooth;
+}
+
+.content section {
+  padding-top: 18px;
+  scroll-margin-top: 8px;
+}
+
+.content h2 {
+  margin: 18px 0 10px;
+  padding-bottom: 6px;
+  font-size: 18px;
+  font-style: italic;
+  border-bottom: 1px solid #2a2c30;
+}
+
+.content h3 {
+  margin: 18px 0 6px;
+  font-size: 15px;
+}
+
+.lead {
+  color: #c9cbcd;
+  text-wrap: pretty;
+}
+
+.steps {
+  padding-left: 22px;
+}
+
+.steps li {
+  margin: 4px 0;
+}
+
+.notes {
+  padding-left: 18px;
+  color: #b9bbbe;
+}
+
+.group h3 {
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--silk-dim);
+}
+
+.controls {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.control {
+  padding: 10px 14px;
+  border-radius: 6px;
+  background: #1a1b1e;
+  box-shadow: inset 0 0 0 1px #24262a;
+}
+
+.control dt {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-weight: 800;
+}
+
+.control dd {
+  margin: 4px 0 0;
+  color: #c9cbcd;
+  text-wrap: pretty;
+}
+
+.showMe {
+  flex: none;
+  padding: 3px 8px;
+  font-size: 10px;
+}
+
+.table {
+  width: 100%;
+  margin: 8px 0 12px;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.table th,
+.table td {
+  padding: 6px 10px;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid #222428;
+}
+
+.table thead th {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--silk-dim);
+}
+
+.table tbody th {
+  width: 34%;
+  white-space: nowrap;
+}
+
+.table td {
+  color: #c9cbcd;
+}
+
+.screen,
+.workflow {
+  margin-bottom: 8px;
+}
+
+.open {
+  margin-left: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--silk-dim);
+}
+
+.content kbd {
+  display: inline-block;
+  padding: 0 6px;
+  font-family: "VT323", ui-monospace, monospace;
+  font-size: 16px;
+  color: #1b2610;
+  background: linear-gradient(180deg, #c3d690 0%, #a8c070 100%);
+  border-radius: 2px;
+}
+
+@media (max-width: 760px) {
+  .body {
+    grid-template-columns: 1fr;
+  }
+
+  .toc {
+    flex-direction: row;
+    flex-wrap: wrap;
+    border-right: 0;
+    border-bottom: 1px solid #222428;
+  }
+
+  .content {
+    padding: 8px 16px 32px;
+  }
+
+  .table tbody th {
+    white-space: normal;
+  }
+}

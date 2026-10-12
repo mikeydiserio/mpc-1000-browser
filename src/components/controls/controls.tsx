@@ -16,6 +16,8 @@ interface HwButtonProps {
   onPress?: () => void
   onRelease?: () => void
   className?: string
+  /** Guide id shown in the hint strip on hover / focus */
+  hint?: string
 }
 
 /**
@@ -33,10 +35,11 @@ export function HwButton({
   onPress,
   onRelease,
   className,
+  hint,
 }: HwButtonProps) {
   const pointerFired = useRef(false)
   return (
-    <div className={`${s.hw} ${className ?? ''}`} data-size={size}>
+    <div className={`${s.hw} ${className ?? ''}`} data-size={size} data-hint={hint}>
       {label ? <span className={s.silk}>{label}</span> : null}
       <div className={s.hwRow}>
         {led !== undefined ? (
@@ -82,10 +85,11 @@ interface KnobProps {
   value: number
   onChange: (v: number) => void
   defaultValue?: number
+  hint?: string
 }
 
 /** Chrome rotary pot, 270° sweep. Drag vertically, scroll, or use arrow keys. */
-export function Knob({ label, value, onChange, defaultValue = 0.7 }: KnobProps) {
+export function Knob({ label, value, onChange, defaultValue = 0.7, hint }: KnobProps) {
   const ref = useRef<HTMLDivElement>(null)
   const drag = useRef<{ y: number; v: number } | null>(null)
   const valueRef = useRef(value)
@@ -107,7 +111,7 @@ export function Knob({ label, value, onChange, defaultValue = 0.7 }: KnobProps) 
   }, [])
 
   return (
-    <div className={s.knobWrap}>
+    <div className={s.knobWrap} data-hint={hint}>
       <span className={s.silk}>{label}</span>
       <div
         ref={ref}
@@ -189,7 +193,7 @@ export function DataWheel({ onStep }: DataWheelProps) {
   }
 
   return (
-    <div className={s.wheelWrap}>
+    <div className={s.wheelWrap} data-hint="data-wheel">
       <span className={s.silk}>DATA</span>
       <div
         ref={ref}
@@ -258,7 +262,7 @@ export function Fader({ label, target, value, onChange }: FaderProps) {
     onChange(clamp01(1 - (clientY - r.top) / r.height))
   }
   return (
-    <div className={s.fader}>
+    <div className={s.fader} data-hint="qlink-slider">
       <span className={s.faderLabel}>{label}</span>
       <div
         ref={trackRef}

@@ -26,7 +26,12 @@ export async function bounce(state: MpcState, loops: number): Promise<Blob> {
       pattern.tracks.forEach((track, pad) => {
         const st = track[step]!
         if (!st.on || state.mutes[pad] || (anySolo && !state.solos[pad])) return
-        events.push({ pad, time: at, velocity: st.velocity, gate: stepDur * 0.95 })
+        events.push({
+          pad,
+          time: Math.max(0, at + (st.offset ?? 0) * stepDur),
+          velocity: st.velocity,
+          gate: stepDur * 0.95,
+        })
       })
     }
     t += pattern.length * stepDur

@@ -13,6 +13,11 @@ export interface LcdUi {
   sampling: boolean
   samplingStarted: number
   recordTarget: number | null
+  sampleSource: 'mic' | 'main'
+  /** Resample length in loops of the current sequence; 0 = free (stop by hand) */
+  resampleLoops: number
+  padTarget: number
+  kitBank: number
   expanded: boolean
   confirm: string | null
 }
@@ -29,6 +34,10 @@ export const useLcdUi = create<LcdUi>(() => ({
   sampling: false,
   samplingStarted: 0,
   recordTarget: null,
+  sampleSource: 'mic',
+  resampleLoops: 1,
+  padTarget: 16,
+  kitBank: 0,
   expanded: false,
   confirm: null,
 }))

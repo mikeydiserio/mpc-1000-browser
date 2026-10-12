@@ -44,7 +44,7 @@ function MiniTransport() {
   const playing = useMpc((x) => x.playing)
   const record = useMpc((x) => x.record)
   return (
-    <div className={s.miniTransport}>
+    <div className={s.miniTransport} data-hint="seq-transport">
       <button
         type="button"
         className={s.tbtn}
@@ -86,7 +86,7 @@ function PatternBank() {
     useShallow((x) => x.patterns.map((p) => p.tracks.some((t) => t.some((step) => step.on)))),
   )
   return (
-    <fieldset className={s.patternBank} aria-label="Sequences">
+    <fieldset className={s.patternBank} aria-label="Sequences" data-hint="seq-patterns">
       {Array.from({ length: PATTERN_COUNT }, (_, i) => (
         <button
           type="button"
@@ -110,6 +110,7 @@ function Toolbar() {
   const pattern = useMpc((x) => x.patterns[x.currentPattern]!)
   const bpm = useMpc((x) => x.bpm)
   const index = useMpc((x) => x.currentPattern)
+  const timingCorrect = useMpc((x) => x.master.timingCorrect)
   const spb = stepsPerBeat(pattern.resolution)
   const bars = pattern.length / (spb * 4)
 
@@ -122,7 +123,7 @@ function Toolbar() {
             ({Number.isInteger(bars) ? bars : bars.toFixed(2)} bar{bars === 1 ? '' : 's'})
           </i>
         </span>
-        <fieldset className={s.segmented} aria-label="Pattern length">
+        <fieldset className={s.segmented} aria-label="Pattern length" data-hint="seq-length">
           {LENGTHS.map((len) => (
             <button
               type="button"
@@ -139,7 +140,7 @@ function Toolbar() {
 
       <div className={s.field}>
         <span className={s.fieldLabel}>Resolution</span>
-        <fieldset className={s.segmented} aria-label="Step resolution">
+        <fieldset className={s.segmented} aria-label="Step resolution" data-hint="seq-resolution">
           {STEP_RESOLUTIONS.map((r) => (
             <button
               type="button"
@@ -154,7 +155,7 @@ function Toolbar() {
         </fieldset>
       </div>
 
-      <label className={s.field}>
+      <label className={s.field} data-hint="seq-swing">
         <span className={s.fieldLabel}>
           Swing <b>{pattern.swing}%</b>
         </span>
@@ -167,7 +168,7 @@ function Toolbar() {
         />
       </label>
 
-      <label className={s.field}>
+      <label className={s.field} data-hint="seq-tempo">
         <span className={s.fieldLabel}>Tempo</span>
         <span className={s.bpmBox}>
           <input
@@ -188,12 +189,25 @@ function Toolbar() {
       <div className={s.actions}>
         <button
           type="button"
+          data-hint="seq-tc"
+          data-on={timingCorrect || undefined}
+          aria-pressed={timingCorrect}
+          onClick={() => st().setMaster({ timingCorrect: !timingCorrect })}
+        >
+          T.C. {timingCorrect ? 'ON' : 'OFF'}
+        </button>
+        <button type="button" data-hint="seq-quantize" onClick={() => st().quantizePattern()}>
+          Quantize
+        </button>
+        <button
+          type="button"
+          data-hint="seq-double"
           onClick={() => st().doublePattern()}
           disabled={pattern.length * 2 > MAX_STEPS}
         >
           Double
         </button>
-        <label className={s.copy}>
+        <label className={s.copy} data-hint="seq-copy">
           <span className={s.visuallyHidden}>Copy sequence to</span>
           <select
             value=""
@@ -215,10 +229,10 @@ function Toolbar() {
             )}
           </select>
         </label>
-        <button type="button" onClick={() => st().clearPattern()}>
+        <button type="button" data-hint="seq-clear" onClick={() => st().clearPattern()}>
           Clear
         </button>
-        <button type="button" onClick={() => st().undo()}>
+        <button type="button" data-hint="seq-undo" onClick={() => st().undo()}>
           Undo
         </button>
       </div>
@@ -237,13 +251,14 @@ function SongChain() {
       <button
         type="button"
         className={s.songToggle}
+        data-hint="seq-song"
         data-on={songMode || undefined}
         aria-pressed={songMode}
         onClick={() => st().set({ songMode: !songMode })}
       >
         Song mode {songMode ? 'ON' : 'OFF'}
       </button>
-      <ol className={s.chain} aria-label="Song chain">
+      <ol className={s.chain} aria-label="Song chain" data-hint="seq-chain">
         {song.map((p, i) => (
           <li key={i} data-current={(songMode && playing && i === position) || undefined}>
             {seqLabel(p)}
@@ -262,6 +277,7 @@ function SongChain() {
       <button
         type="button"
         className={s.chainAdd}
+        data-hint="seq-chain"
         onClick={() => st().set({ song: [...st().song, current] })}
       >
         + Seq {seqLabel(current)}
@@ -304,7 +320,7 @@ function Grid() {
 
   return (
     <div className={s.gridWrap}>
-      <fieldset className={s.bankTabs} aria-label="Pad bank">
+      <fieldset className={s.bankTabs} aria-label="Pad bank" data-hint="seq-bank">
         {BANK_NAMES.map((name, i) => (
           <button
             type="button"
@@ -321,6 +337,7 @@ function Grid() {
         {/* biome-ignore lint/a11y/noStaticElementInteractions: pointer handling is delegated here for paint-drag; every cell is an aria switch */}
         <div
           className={s.grid}
+          data-hint="seq-grid"
           style={{ '--len': length, '--beat': beat } as React.CSSProperties}
           onPointerDown={(e) => {
             if (e.button !== 0) return
@@ -394,6 +411,7 @@ function TrackRow({ pad, length, beat }: { pad: number; length: number; beat: nu
         <button
           type="button"
           className={s.trackName}
+          data-hint="seq-track"
           onClick={() => {
             st().selectPad(pad)
           }}
@@ -410,6 +428,7 @@ function TrackRow({ pad, length, beat }: { pad: number; length: number; beat: nu
           className={s.ms}
           data-on={muted || undefined}
           aria-pressed={muted}
+          data-hint="seq-mute"
           aria-label={`Mute ${padLabel(pad)}`}
           onClick={() => st().toggleMute(pad)}
         >
@@ -421,6 +440,7 @@ function TrackRow({ pad, length, beat }: { pad: number; length: number; beat: nu
           data-solo
           data-on={solo || undefined}
           aria-pressed={solo}
+          data-hint="seq-solo"
           aria-label={`Solo ${padLabel(pad)}`}
           onClick={() => st().toggleSolo(pad)}
         >
@@ -435,7 +455,12 @@ function TrackRow({ pad, length, beat }: { pad: number; length: number; beat: nu
           data-pad={pad}
           data-on={step.on || undefined}
           data-group={Math.floor(i / beat) % 2 === 1 || undefined}
-          style={step.on ? ({ '--vel': step.velocity / 127 } as React.CSSProperties) : undefined}
+          data-loose={(step.on && !!step.offset) || undefined}
+          style={
+            step.on
+              ? ({ '--vel': step.velocity / 127, '--off': step.offset ?? 0 } as React.CSSProperties)
+              : undefined
+          }
           role="switch"
           tabIndex={-1}
           aria-checked={step.on}
@@ -486,10 +511,28 @@ function VelocityLane() {
         <b>
           {padLabel(pad)} {name}
         </b>
+        <span className={s.shiftBtns} data-hint="seq-shift">
+          <button
+            type="button"
+            aria-label={`Shift ${padLabel(pad)} one step earlier`}
+            onClick={() => st().shiftTrack(pad, -1)}
+          >
+            ◀
+          </button>
+          shift
+          <button
+            type="button"
+            aria-label={`Shift ${padLabel(pad)} one step later`}
+            onClick={() => st().shiftTrack(pad, 1)}
+          >
+            ▶
+          </button>
+        </span>
       </div>
       <div
         ref={laneRef}
         className={s.velocityLane}
+        data-hint="seq-velocity"
         style={{ '--len': pattern.length } as React.CSSProperties}
         onPointerDown={(e) => {
           dragging.current = true

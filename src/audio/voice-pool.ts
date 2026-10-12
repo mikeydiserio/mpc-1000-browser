@@ -114,12 +114,23 @@ export class VoicePool {
     src.buffer = buffer
     src.playbackRate.value = rate
 
+    const vel = Math.min(127, opts.velocity) / 127
+
     let head: AudioNode = src
     if (p.filterType !== 'off') {
       const filter = ctx.createBiquadFilter()
       filter.type = p.filterType
-      filter.frequency.value = p.cutoff
       filter.Q.value = p.resonance
+      // Softer hits close the filter (up to 4 octaves at full depth)
+      const base = clampHz(p.cutoff * 2 ** (-p.velocityToFilter * 4 * (1 - vel)))
+      const envOct = p.filterEnvAmount
+      if (envOct !== 0) {
+        // Envelope jumps by `envOct` octaves on the hit and decays back to the base cutoff
+        filter.frequency.setValueAtTime(clampHz(base * 2 ** envOct), when)
+        filter.frequency.setTargetAtTime(base, when, Math.max(0.005, p.filterEnvDecay / 1000) / 4)
+      } else {
+        filter.frequency.value = base
+      }
       src.connect(filter)
       head = filter
     }
@@ -137,7 +148,6 @@ export class VoicePool {
     if (p.sendDelay > 0) sends.push(connectSend(ctx, panner, this.chain.delaySend, p.sendDelay))
     if (p.sendReverb > 0) sends.push(connectSend(ctx, panner, this.chain.reverbSend, p.sendReverb))
 
-    const vel = Math.min(127, opts.velocity) / 127
     const level = p.volume * p.volume * (1 - p.velocitySens + p.velocitySens * vel)
     const attack = Math.max(0.002, p.attack / 1000)
     env.gain.setValueAtTime(0, when)
@@ -192,6 +202,8 @@ export class VoicePool {
     return voice
   }
 }
+
+const clampHz = (hz: number) => Math.min(20000, Math.max(20, hz))
 
 function connectSend(ctx: BaseAudioContext, from: AudioNode, to: AudioNode, amount: number) {
   const g = ctx.createGain()

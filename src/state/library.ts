@@ -4,7 +4,7 @@ import { engine } from '../audio/engine'
 import { downloadBlob, encodeWav } from '../audio/wav'
 import { createPad, seedDemoPattern } from './defaults'
 import { type ProjectData, projectSnapshot, useMpc } from './store'
-import type { SampleMeta } from './types'
+import type { PadParams, SampleMeta } from './types'
 
 const PROJECT_KEY = 'mpc:project'
 const SAMPLE_PREFIX = 'mpc:sample:'
@@ -188,31 +188,81 @@ function fromBase64(b64: string) {
 
 export function exportProject() {
   const project = projectSnapshot(useMpc.getState())
-  const used = new Set(project.pads.map((p) => p.sampleId).filter((id): id is string => !!id))
-  const samples: Record<string, string> = {}
-  for (const id of used) {
-    const buffer = engine.getBuffer(id)
-    if (buffer) samples[id] = toBase64(encodeWav(buffer))
-  }
+  const samples = encodeUsedSamples(project.pads)
   const file: ProjectFile = { format: 'mpc-browser', version: 1, project, samples }
   downloadBlob(new Blob([JSON.stringify(file)], { type: 'application/json' }), 'project.mpcweb')
   useMpc.getState().flash('Project exported')
 }
 
-export async function importProject(file: File) {
+/** Kit = all 64 pads with their samples and settings, without sequences. */
+interface KitFile {
+  format: 'mpc-browser-kit'
+  version: 1
+  pads: PadParams[]
+  meta: Record<string, SampleMeta>
+  samples: Record<string, string>
+}
+
+function encodeUsedSamples(pads: PadParams[]) {
+  const used = new Set(pads.map((p) => p.sampleId).filter((id): id is string => !!id))
+  const samples: Record<string, string> = {}
+  for (const id of used) {
+    const buffer = engine.getBuffer(id)
+    if (buffer) samples[id] = toBase64(encodeWav(buffer))
+  }
+  return samples
+}
+
+export function exportKit() {
+  const s = useMpc.getState()
+  const samples = encodeUsedSamples(s.pads)
+  const meta = Object.fromEntries(Object.keys(samples).map((id) => [id, s.samples[id]!]))
+  const file: KitFile = { format: 'mpc-browser-kit', version: 1, pads: s.pads, meta, samples }
+  downloadBlob(new Blob([JSON.stringify(file)], { type: 'application/json' }), 'kit.mpckit')
+  s.flash('Kit exported')
+}
+
+async function restoreSamples(samples: Record<string, string>) {
+  for (const [id, b64] of Object.entries(samples)) {
+    const buffer = await engine.decode(fromBase64(b64))
+    engine.setBuffer(id, buffer)
+    await saveSample(id, buffer)
+  }
+}
+
+/** Opens either a full project (.mpcweb) or a kit (.mpckit — replaces pads, keeps sequences). */
+export async function importFile(file: File) {
+  const s = useMpc.getState()
   try {
     const parsed: unknown = JSON.parse(await file.text())
-    if (!isProjectFile(parsed)) throw new Error('bad file')
-    for (const [id, b64] of Object.entries(parsed.samples)) {
-      const buffer = await engine.decode(fromBase64(b64))
-      engine.setBuffer(id, buffer)
-      await saveSample(id, buffer)
+    if (isProjectFile(parsed)) {
+      await restoreSamples(parsed.samples)
+      s.loadProject(parsed.project)
+      s.flash('Project loaded')
+    } else if (isKitFile(parsed)) {
+      await restoreSamples(parsed.samples)
+      useMpc.setState((x) => ({
+        samples: { ...x.samples, ...parsed.meta },
+        pads: parsed.pads.map((p) => ({ ...createPad(), ...p })),
+      }))
+      s.flash('Kit loaded')
+    } else {
+      throw new Error('unknown file')
     }
-    useMpc.getState().loadProject(parsed.project)
-    useMpc.getState().flash('Project loaded')
   } catch {
-    useMpc.getState().flash('Invalid project file')
+    s.flash('Not a project or kit file')
   }
+}
+
+function isKitFile(value: unknown): value is KitFile {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'format' in value &&
+    value.format === 'mpc-browser-kit' &&
+    'pads' in value &&
+    Array.isArray(value.pads)
+  )
 }
 
 function isProjectFile(value: unknown): value is ProjectFile {

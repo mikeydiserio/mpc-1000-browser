@@ -6,6 +6,9 @@ import { useLcdUi } from './components/lcd/lcd-ui'
 import { adjustCursorParam } from './components/lcd/params'
 import { Mpc } from './components/mpc/mpc'
 import { Sequencer } from './components/sequencer/sequencer'
+import { Guide } from './guide/guide'
+import { openGuide, useGuide } from './guide/guide-store'
+import { HintBar } from './guide/hint-bar'
 import { commands } from './state/commands'
 import { newProject, restoreSession, saveNow, startAutosave } from './state/library'
 import { PAD_KEYS, pressPad, releasePad } from './state/pad-input'
@@ -38,6 +41,8 @@ export function App() {
         <Sequencer />
       </div>
       {ready ? null : <p className={s.boot}>Loading sounds…</p>}
+      <HintBar />
+      <Guide />
     </main>
   )
 }
@@ -79,6 +84,12 @@ function useKeyboard() {
     const down = (e: KeyboardEvent) => {
       if (e.key === 'Shift') useMpc.getState().set({ shift: true })
       if (isTyping(e.target) || e.metaKey || e.ctrlKey || e.altKey) return
+      if (useGuide.getState().open) return
+      if (e.key === '?') {
+        e.preventDefault()
+        openGuide()
+        return
+      }
       const position = PAD_CODES.indexOf(e.code)
       if (position !== -1) {
         e.preventDefault()

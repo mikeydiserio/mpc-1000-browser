@@ -82,6 +82,13 @@ interface MpcActions {
   ) => void
   selectPattern: (index: number) => void
   clearTrack: (pad: number) => void
+  /** Rotate a track's steps within the pattern length (MPC "shift timing") */
+  shiftTrack: (pad: number, dir: number) => void
+  copyTrack: (from: number, to: number) => void
+  /** Snap every recorded micro-timing offset in the current pattern back to the grid */
+  quantizePattern: () => void
+  copyPad: (from: number, to: number) => void
+  swapPads: (a: number, b: number) => void
   clearPattern: () => void
   copyPatternTo: (target: number) => void
   doublePattern: () => void
@@ -226,6 +233,55 @@ export const useMpc = create<MpcState & MpcActions>()((set, get) => {
       updateTrack(pad, () => createTrack())
     },
 
+    shiftTrack: (pad, dir) => {
+      get().pushUndo()
+      updatePattern((p) => {
+        const tracks = p.tracks.slice()
+        const track = tracks[pad]!.slice()
+        const active = track.slice(0, p.length)
+        const n = p.length
+        tracks[pad] = [
+          ...active.map((_, i) => active[(((i - dir) % n) + n) % n]!),
+          ...track.slice(n),
+        ]
+        return { ...p, tracks }
+      })
+    },
+
+    copyTrack: (from, to) => {
+      get().pushUndo()
+      updatePattern((p) => {
+        const tracks = p.tracks.slice()
+        tracks[to] = tracks[from]!.map((step) => ({ ...step }))
+        return { ...p, tracks }
+      })
+    },
+
+    quantizePattern: () => {
+      get().pushUndo()
+      updatePattern((p) => ({
+        ...p,
+        tracks: p.tracks.map((track) =>
+          track.map((step) => (step.offset ? { ...step, offset: 0 } : step)),
+        ),
+      }))
+    },
+
+    copyPad: (from, to) =>
+      set((s) => {
+        const pads = s.pads.slice()
+        pads[to] = structuredClone(s.pads[from]!)
+        return { pads }
+      }),
+
+    swapPads: (a, b) =>
+      set((s) => {
+        const pads = s.pads.slice()
+        pads[a] = s.pads[b]!
+        pads[b] = s.pads[a]!
+        return { pads }
+      }),
+
     clearPattern: () => {
       get().pushUndo()
       updatePattern((p) => ({ ...p, tracks: p.tracks.map(() => createTrack()) }))
@@ -305,13 +361,14 @@ export const useMpc = create<MpcState & MpcActions>()((set, get) => {
 
     loadProject: (project) =>
       set({
-        pads: project.pads,
+        // Merge over defaults so projects saved by older versions pick up new parameters
+        pads: project.pads.map((p) => ({ ...createPad(), ...p })),
         samples: project.samples,
         patterns: project.patterns,
         song: project.song,
         bpm: project.bpm,
-        fx: project.fx,
-        master: project.master,
+        fx: { ...createFx(), ...project.fx },
+        master: { ...createMaster(), ...project.master },
         qlinks: project.qlinks,
         mutes: project.mutes,
         currentPattern: 0,

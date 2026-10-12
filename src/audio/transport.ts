@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { useMpc } from '../state/store'
-import { PADS_PER_BANK } from '../state/types'
+import { PADS_PER_BANK, type Step } from '../state/types'
 import { engine } from './engine'
 import { divisionSeconds, stepSeconds, stepsPerBeat, swingOffset } from './timing'
 
@@ -55,10 +55,11 @@ class Transport {
     this.worker.postMessage('start')
   }
 
-  play(fromStart: boolean) {
+  /** Starts playback; returns the AudioContext time of the first step (null if already playing). */
+  play(fromStart: boolean): number | null {
     const ctx = engine.ensure()
     const s = useMpc.getState()
-    if (s.playing) return
+    if (s.playing) return null
     this.ensureWorker()
     if (s.songMode) {
       useMpc.setState({ songPosition: 0, currentPattern: s.song[0] ?? s.currentPattern })
@@ -81,6 +82,7 @@ class Transport {
     this.anchorTime = start - this.step * stepSeconds(pattern.resolution, s.bpm)
     useMpc.setState({ playing: true, queuedPattern: null })
     this.startRaf()
+    return start
   }
 
   stop() {
@@ -160,9 +162,14 @@ class Transport {
     const candidates = [...this.log.filter((l) => l.pattern === s.currentPattern), upcoming]
     let best = upcoming
     for (const c of candidates) if (Math.abs(c.time - time) < Math.abs(best.time - time)) best = c
-    // Not yet booked by the scheduler: stop it re-firing the note we just played live
-    if (best === upcoming) this.suppress.add(`${pad}:${best.step}`)
-    s.setStep(pad, best.step, { on: true, velocity: Math.round(velocity) })
+    // TIMING CORRECT off: keep the hit's exact distance from its nearest step
+    const offset = s.master.timingCorrect
+      ? 0
+      : Math.max(-0.5, Math.min(0.5, (time - best.time) / stepDur))
+    // Not yet booked by the scheduler: stop it re-firing the note we just played live.
+    // Early (negative-offset) notes are booked one step ahead, so they never re-fire.
+    if (best === upcoming && offset >= 0) this.suppress.add(`${pad}:${best.step}`)
+    s.setStep(pad, best.step, { on: true, velocity: Math.round(velocity), offset })
   }
 
   private tick() {
@@ -200,34 +207,43 @@ class Transport {
     const patternIndex = s.currentPattern
     const pattern = s.patterns[patternIndex]!
     if (this.step >= pattern.length) this.step = 0
+    const step = this.step
     const stepDur = stepSeconds(pattern.resolution, s.bpm)
-    const t = this.nextStepTime + swingOffset(this.step, pattern.swing, stepDur)
-    const anySolo = s.solos.some(Boolean)
+    const t = this.nextStepTime + swingOffset(step, pattern.swing, stepDur)
 
+    // On-grid and late notes of this step
     for (let pad = 0; pad < pattern.tracks.length; pad++) {
-      const st = pattern.tracks[pad]![this.step]!
-      if (!st.on) continue
-      const key = `${pad}:${this.step}`
-      if (s.erase && this.isHeld(pad)) {
-        s.setStep(pad, this.step, { on: false })
-        continue
+      const st = pattern.tracks[pad]![step]!
+      if (st.on && (st.offset ?? 0) >= 0)
+        this.visit(pad, step, st, t + (st.offset ?? 0) * stepDur, stepDur)
+    }
+
+    // Early notes of the following step fire inside this step's slot
+    const last = step + 1 >= pattern.length
+    const nextIndex = last ? this.peekNextPattern() : patternIndex
+    const nextPattern = s.patterns[nextIndex]!
+    const nextStep = last ? 0 : step + 1
+    const nextDur = stepSeconds(nextPattern.resolution, s.bpm)
+    const nextT = this.nextStepTime + stepDur + swingOffset(nextStep, nextPattern.swing, nextDur)
+    for (let pad = 0; pad < nextPattern.tracks.length; pad++) {
+      const st = nextPattern.tracks[pad]![nextStep]!
+      if (st.on && (st.offset ?? 0) < 0) {
+        this.visit(
+          pad,
+          nextStep,
+          st,
+          nextT + st.offset! * nextDur,
+          nextDur,
+          nextIndex !== patternIndex,
+        )
       }
-      // REC (not OVERDUB) overwrites: the first pass wipes events it crosses, except fresh takes
-      if (s.record === 'rec' && !this.suppress.has(key)) {
-        s.setStep(pad, this.step, { on: false })
-        continue
-      }
-      if (this.suppress.delete(key)) continue
-      if (s.mutes[pad] || (anySolo && !s.solos[pad])) continue
-      engine.trigger(pad, s.pads, { velocity: st.velocity, bpm: s.bpm, gate: stepDur * 0.95 }, t)
-      this.light(pad, t)
     }
 
     const spb = stepsPerBeat(pattern.resolution)
     const clickOn = s.master.metronome && (!s.master.metronomeOnlyRec || s.record !== 'off')
-    if (clickOn && this.step % spb === 0) engine.click(t, this.step % (spb * 4) === 0)
+    if (clickOn && step % spb === 0) engine.click(t, step % (spb * 4) === 0)
 
-    this.log.push({ step: this.step, pattern: patternIndex, time: t })
+    this.log.push({ step, pattern: patternIndex, time: t })
     if (this.log.length > LOG_LIMIT) this.log.shift()
 
     this.nextStepTime += stepDur
@@ -236,6 +252,41 @@ class Transport {
       this.step = 0
       this.patternEnd()
     }
+  }
+
+  /** Apply erase / REC-overwrite rules to one event, otherwise play it at `time`. */
+  private visit(
+    pad: number,
+    step: number,
+    st: Step,
+    time: number,
+    stepDur: number,
+    readOnly = false,
+  ) {
+    const s = useMpc.getState()
+    const key = `${pad}:${step}`
+    if (!readOnly && s.erase && this.isHeld(pad)) {
+      s.setStep(pad, step, { on: false })
+      return
+    }
+    // REC (not OVERDUB) overwrites: the first pass wipes events it crosses, except fresh takes
+    if (!readOnly && s.record === 'rec' && !this.suppress.has(key)) {
+      s.setStep(pad, step, { on: false })
+      return
+    }
+    if (this.suppress.delete(key)) return
+    const anySolo = s.solos.some(Boolean)
+    if (s.mutes[pad] || (anySolo && !s.solos[pad])) return
+    engine.trigger(pad, s.pads, { velocity: st.velocity, bpm: s.bpm, gate: stepDur * 0.95 }, time)
+    this.light(pad, time)
+  }
+
+  /** Which pattern plays after the current one ends — mirrors patternEnd() without side effects. */
+  private peekNextPattern() {
+    const s = useMpc.getState()
+    if (s.queuedPattern !== null) return s.queuedPattern
+    if (s.songMode && s.song.length) return s.song[(s.songPosition + 1) % s.song.length]!
+    return s.currentPattern
   }
 
   private patternEnd() {

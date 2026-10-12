@@ -29,6 +29,9 @@ export function createPad(sampleId: string | null = null): PadParams {
     filterType: 'off',
     cutoff: 18000,
     resonance: 0.7,
+    filterEnvAmount: 0,
+    filterEnvDecay: 250,
+    velocityToFilter: 0,
     velocitySens: 0.8,
     retrigger: { count: 1, rate: '1/16', fade: 0.15, pitchStep: 0 },
     sendDelay: 0,
@@ -71,7 +74,14 @@ export function createFx(): FxSettings {
 }
 
 export function createMaster(): MasterSettings {
-  return { volume: 0.8, recGain: 0.7, metronome: false, metronomeOnlyRec: true, countIn: false }
+  return {
+    volume: 0.8,
+    recGain: 0.7,
+    metronome: false,
+    metronomeOnlyRec: true,
+    countIn: false,
+    timingCorrect: true,
+  }
 }
 
 export function createQLinks(): QLinkSlider[] {

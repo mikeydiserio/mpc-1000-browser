@@ -38,3 +38,17 @@ select {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* "Show me" from the guide: briefly ring the control on the device */
+[data-spotlight] {
+  border-radius: 6px;
+  outline: 3px solid var(--focus);
+  outline-offset: 4px;
+  animation: spotlight 0.55s ease-in-out 4;
+}
+
+@keyframes spotlight {
+  50% {
+    outline-color: transparent;
+  }
+}

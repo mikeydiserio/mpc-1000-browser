@@ -51,7 +51,7 @@ function Pad({ position, topSilk }: { position: number; topSilk?: string }) {
       : (name ?? '')
 
   return (
-    <div className={s.cell}>
+    <div className={s.cell} data-hint="pad">
       {topSilk ? <span className={s.topSilk}>{topSilk}</span> : null}
       <span className={s.silk}>
         PAD{position + 1}

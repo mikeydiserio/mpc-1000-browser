@@ -2,10 +2,14 @@
 
 A 16-pad MPC1000-style sampler and pattern step sequencer that runs entirely in the browser.
 
+**New here? Read the [User Guide](GUIDE.md)** — or press `?` in the app. Hovering any control shows
+what it does in the strip at the bottom of the window.
+
 ```bash
 bun install
 bun run dev      # http://localhost:5173
 bun run build    # typecheck + production build
+bun run guide    # regenerate GUIDE.md from src/guide/guide-content.ts
 ```
 
 ## Audio engine
@@ -18,7 +22,9 @@ renderer that reuses the exact live voice chain for WAV export.
 - **Voices** — `voice-pool.ts`: region start/end, tune/fine, reverse, loop, one-shot / note-on,
   mono/poly, mute groups, attack/decay, LP/HP/BP filter, retrigger rolls, delay + reverb sends
 - **Mix bus** — tempo-synced delay, convolution reverb, bus compressor (`mix-chain.ts`)
-- **Sampling** — mic/line-in via AudioWorklet with auto silence trim (`sampler.ts`)
+- **Sampling** — mic/line-in or MAIN OUT resampling via AudioWorklet; synced resamples start and
+  stop on the beat (`sampler.ts`)
+- **Micro-timing** — with Timing Correct off, recorded hits keep their exact offset from the grid
 
 ## The machine
 
@@ -38,13 +44,18 @@ renderer that reuses the exact live voice chain for WAV export.
 
 **Pad editing** — TRIM (start/end with draggable waveform markers, zoom, normalize, crop, chop
 into slices by equal division or transient detection), PROGRAM (level, tune, fine, attack, decay,
-velocity sensitivity, pan, filter, play mode, polyphony, loop, mute group, reverse, retrigger).
+velocity sensitivity, pan, filter + filter envelope + velocity→filter, play mode, polyphony, loop,
+mute group, reverse, retrigger, copy/swap pads).
 
 **Sequencer** — 16 patterns, 8–64 steps, 1/8 · 1/16 · 1/16T · 1/32 resolution, swing, paint-drag
 editing, right-click velocity cycling, per-pad velocity lane, mute/solo, copy/double/clear/undo,
-song-mode chaining, WAV bounce.
+Timing Correct on/off with quantize, track shift / copy, song-mode chaining, WAV bounce.
 
 **Keyboard** — `Z X C V / A S D F / Q W E R / 1 2 3 4` = pads 1–16 (Shift = accent), Space =
 play/stop, arrows = cursor, `,` `.` = decrement / increment field. Web MIDI notes 37–52 play the pads.
 
-Projects autosave to IndexedDB; SAVE → EXPORT writes a portable `.mpcweb` file with samples.
+Projects autosave to IndexedDB; SAVE → EXPORT writes a portable `.mpcweb` file with samples, SAVE → KIT
+writes a `.mpckit` (pads + samples only). LOAD → OPEN reads either.
+
+The guide content lives in `src/guide/guide-content.ts` and drives the in-app guide, the hover hints
+and `GUIDE.md` — edit it there and run `bun run guide`.

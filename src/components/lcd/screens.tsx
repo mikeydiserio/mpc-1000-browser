@@ -3,14 +3,16 @@ import { bounce } from '../../audio/bounce'
 import { engine } from '../../audio/engine'
 import { bindInput, initMidi, listMidiInputs } from '../../audio/midi'
 import { sampler } from '../../audio/sampler'
+import { stepSeconds } from '../../audio/timing'
 import { transport } from '../../audio/transport'
 import { DECAY_OFF } from '../../audio/voice-pool'
 import { detectTransients, downloadBlob, normalizeBuffer, sliceBuffer } from '../../audio/wav'
 import { hz, padLabel, pct, seqLabel, signed } from '../../state/format'
 import {
   addBuffer,
+  exportKit,
   exportProject,
-  importProject,
+  importFile,
   loadDefaultKit,
   loadFilesToPads,
   newProject,
@@ -380,7 +382,7 @@ function trimScreen(state: MpcState, u: LcdUi): Screen {
 
 // ─── PROGRAM ─────────────────────────────────────────────────────────────────
 
-const PROGRAM_PAGES = ['AMP', 'FILTER', 'MODE', 'RETRIG'] as const
+const PROGRAM_PAGES = ['AMP', 'FILTER', 'MODE', 'RETRIG', 'COPY'] as const
 
 function programScreen(state: MpcState): Screen {
   const pad = state.pads[state.selectedPad]!
@@ -416,6 +418,9 @@ function programScreen(state: MpcState): Screen {
           },
         },
         padNum('Reso', 'resonance', 0.1, 20, 0.1, (v) => v.toFixed(1), 1),
+        padNum('EnvAmt', 'filterEnvAmount', -6, 6, 0.25, (v) => `${signed(v, 2)} oct`, 1),
+        padNum('EnvDcy', 'filterEnvDecay', 5, 4000, 5, (v) => `${v}ms`, 100),
+        padNum('Vel>Flt', 'velocityToFilter', 0, 1, 0.01, pct, 0.1),
       ]
       break
     case 2:
@@ -430,6 +435,19 @@ function programScreen(state: MpcState): Screen {
         ),
         padNum('MuteGrp', 'muteGroup', 0, 16, 1, (v) => (v === 0 ? 'OFF' : String(v))),
         padChoice('Reverse', 'reverse', [false, true], (v) => (v ? 'ON' : 'OFF')),
+      ]
+      break
+    case 4:
+      params = [
+        padSelect(state),
+        choiceParam('To pad', {
+          get: () => ui().padTarget,
+          set: (v) => useLcdUi.setState({ padTarget: v }),
+          options: PAD_INDEXES,
+          format: (v) => `${padLabel(v)} ${sampleName(state, v)}`,
+        }),
+        infoParam('COPY', 'sample + every setting → To pad'),
+        infoParam('SWAP', 'hold SHIFT + DO IT to swap'),
       ]
       break
     default:
@@ -477,8 +495,23 @@ function programScreen(state: MpcState): Screen {
         active: page === i,
         action: () => st().set({ page: i, cursor: Math.min(st().cursor, 7) }),
       })),
-      { label: 'TRIM', action: () => st().setMode('trim') },
-      audition(),
+      page === 4
+        ? {
+            label: 'DO IT',
+            action: () => {
+              const x = st()
+              const to = ui().padTarget
+              if (to === x.selectedPad) return x.flash('Pick a different pad')
+              if (x.shift) {
+                x.swapPads(x.selectedPad, to)
+                x.flash(`Swapped ${padLabel(x.selectedPad)} ↔ ${padLabel(to)}`)
+              } else {
+                x.copyPad(x.selectedPad, to)
+                x.flash(`Copied ${padLabel(x.selectedPad)} → ${padLabel(to)}`)
+              }
+            },
+          }
+        : audition(),
     ],
   }
 }
@@ -614,34 +647,72 @@ function effectScreen(state: MpcState): Screen {
 
 function recordScreen(state: MpcState, u: LcdUi): Screen {
   const target = u.recordTarget ?? state.selectedPad
+  const resample = u.sampleSource === 'main'
+  const synced = resample && u.resampleLoops > 0
   const status = u.sampling
-    ? 'RECORDING…'
+    ? resample
+      ? 'RESAMPLING MAIN OUT…'
+      : 'RECORDING…'
     : u.armed
-      ? 'ARMED — F2 to record'
+      ? `ARMED (${resample ? 'MAIN OUT' : 'MIC'}) — F2 to record`
       : 'DISARMED — F1 to arm input'
+
+  const keep = (buffer: AudioBuffer | null) => {
+    useLcdUi.setState({ sampling: false })
+    if (!buffer) return st().flash('Nothing recorded')
+    const x = st()
+    const pad = ui().recordTarget ?? x.selectedPad
+    const name = `${ui().sampleSource === 'main' ? 'Resmpl' : 'Sample'}${Object.keys(x.samples).length + 1}`
+    const meta = addBuffer(name, buffer)
+    x.assignSample(pad, meta.id)
+    x.selectPad(pad)
+    x.flash(`Recorded ${buffer.duration.toFixed(1)}s → ${padLabel(pad)}`)
+  }
+
   return {
     title: `SAMPLE → ${padLabel(target)}`,
     columns: 1,
     visual: <InputMeter status={status} />,
     params: [
+      choiceParam('Input', {
+        get: () => ui().sampleSource,
+        set: (v) => {
+          if (ui().armed) {
+            sampler.disarm()
+            useLcdUi.setState({ armed: false, sampling: false })
+          }
+          useLcdUi.setState({ sampleSource: v })
+        },
+        options: ['mic', 'main'] as const,
+        format: (v) => (v === 'mic' ? 'MIC / LINE IN' : 'MAIN OUT (resample)'),
+      }),
       choiceParam('Target', {
         get: (x) => ui().recordTarget ?? x.selectedPad,
         set: (v) => useLcdUi.setState({ recordTarget: v }),
         options: PAD_INDEXES,
         format: (v) => `${padLabel(v)} ${sampleName(state, v)}`,
       }),
-      numParam('Gain', {
-        get: (x) => x.master.recGain,
-        set: (v) => {
-          st().setMaster({ recGain: v })
-          sampler.setGain(v)
-        },
-        min: 0,
-        max: 1,
-        step: 0.01,
-        big: 0.1,
-        format: pct,
-      }),
+      resample
+        ? numParam('Length', {
+            get: () => ui().resampleLoops,
+            set: (v) => useLcdUi.setState({ resampleLoops: v }),
+            min: 0,
+            max: 8,
+            format: (v) =>
+              v === 0 ? 'FREE (F2 stops)' : `${v}x Seq ${seqLabel(state.currentPattern)} (auto)`,
+          })
+        : numParam('Gain', {
+            get: (x) => x.master.recGain,
+            set: (v) => {
+              st().setMaster({ recGain: v })
+              sampler.setGain(v)
+            },
+            min: 0,
+            max: 1,
+            step: 0.01,
+            big: 0.1,
+            format: pct,
+          }),
     ],
     fkeys: [
       {
@@ -654,7 +725,7 @@ function recordScreen(state: MpcState, u: LcdUi): Screen {
             return
           }
           try {
-            await sampler.arm(st().master.recGain)
+            await sampler.arm(ui().sampleSource, st().master.recGain)
             useLcdUi.setState({ armed: true })
           } catch {
             st().flash('Microphone access denied')
@@ -664,22 +735,33 @@ function recordScreen(state: MpcState, u: LcdUi): Screen {
       {
         label: u.sampling ? 'STOP' : 'REC',
         active: u.sampling,
-        action: () => {
+        action: async () => {
           if (!ui().armed) return st().flash('Arm the input first (F1)')
-          if (!ui().sampling) {
-            sampler.start()
-            useLcdUi.setState({ sampling: true, samplingStarted: performance.now() })
-            return
+          if (ui().sampling) {
+            if (synced) {
+              sampler.cancel()
+              transport.stop()
+              useLcdUi.setState({ sampling: false })
+              return st().flash('Resample cancelled')
+            }
+            return keep(sampler.stop())
           }
-          useLcdUi.setState({ sampling: false })
-          const buffer = sampler.stop()
-          if (!buffer) return st().flash('Nothing recorded')
-          const x = st()
-          const pad = ui().recordTarget ?? x.selectedPad
-          const meta = addBuffer(`Sample${Object.keys(x.samples).length + 1}`, buffer)
-          x.assignSample(pad, meta.id)
-          x.selectPad(pad)
-          x.flash(`Recorded ${buffer.duration.toFixed(1)}s → ${padLabel(pad)}`)
+          if (synced) {
+            // Bounce-in-place: play the sequence from the top and capture exactly N loops
+            const x = st()
+            if (x.playing) transport.stop()
+            const pattern = x.patterns[x.currentPattern]!
+            const length =
+              pattern.length * stepSeconds(pattern.resolution, x.bpm) * ui().resampleLoops
+            const at = transport.play(true)
+            if (at === null) return
+            useLcdUi.setState({ sampling: true, samplingStarted: performance.now() })
+            const buffer = await sampler.recordWindow(at, at + length)
+            transport.stop()
+            return keep(buffer)
+          }
+          sampler.start()
+          useLcdUi.setState({ sampling: true, samplingStarted: performance.now() })
         },
       },
       null,
@@ -739,10 +821,10 @@ function loadScreen(state: MpcState): Screen {
         },
       },
       {
-        label: 'PROJ',
+        label: 'OPEN',
         action: async () => {
-          const [file] = await pickFiles('.mpcweb,application/json')
-          if (file) await importProject(file)
+          const [file] = await pickFiles('.mpcweb,.mpckit,application/json')
+          if (file) await importFile(file)
         },
       },
       {
@@ -777,6 +859,7 @@ function saveScreen(state: MpcState, u: LcdUi): Screen {
     ],
     fkeys: [
       { label: 'EXPORT', action: () => exportProject() },
+      { label: 'KIT', action: () => exportKit() },
       {
         label: 'BOUNCE',
         action: async () => {
@@ -789,7 +872,6 @@ function saveScreen(state: MpcState, u: LcdUi): Screen {
           st().flash('WAV exported')
         },
       },
-      null,
       null,
       {
         label: 'NEW',
@@ -864,6 +946,7 @@ function songScreen(state: MpcState): Screen {
 }
 
 function seqEditScreen(state: MpcState, u: LcdUi): Screen {
+  if (state.page === 1) return trackEditScreen(state, u)
   return {
     title: `SEQ EDIT ${seqLabel(state.currentPattern)}`,
     columns: 2,
@@ -921,7 +1004,58 @@ function seqEditScreen(state: MpcState, u: LcdUi): Screen {
       },
       { label: 'DOUBLE', action: () => st().doublePattern() },
       { label: 'UNDO', action: () => st().undo() },
-      null,
+      { label: 'TRACK', action: () => st().set({ page: 1, cursor: 0 }) },
+    ],
+  }
+}
+
+/** SEQ EDIT page 2 — per-track timing tools (MPC "shift timing", copy events, quantize). */
+function trackEditScreen(state: MpcState, u: LcdUi): Screen {
+  const pattern = state.patterns[state.currentPattern]!
+  const loose = pattern.tracks.reduce(
+    (n, t) => n + t.filter((step) => step.on && step.offset).length,
+    0,
+  )
+  return {
+    title: `TRACK EDIT Seq ${seqLabel(state.currentPattern)}`,
+    columns: 1,
+    params: [
+      padSelect(state),
+      choiceParam('Copy to', {
+        get: () => ui().padTarget,
+        set: (v) => useLcdUi.setState({ padTarget: v }),
+        options: PAD_INDEXES,
+        format: (v) => `${padLabel(v)} ${sampleName(state, v)}`,
+      }),
+      toggleParam(
+        'T.C.',
+        (x) => x.master.timingCorrect,
+        (v) => st().setMaster({ timingCorrect: v }),
+        ['ON (snap to grid)', 'OFF (keep feel)'],
+      ),
+      infoParam('Unquantized', `${loose} event${loose === 1 ? '' : 's'} off the grid`),
+    ],
+    fkeys: [
+      { label: '◀SHIFT', action: () => st().shiftTrack(st().selectedPad, -1) },
+      { label: 'SHIFT▶', action: () => st().shiftTrack(st().selectedPad, 1) },
+      {
+        label: 'CPYTRK',
+        action: () => {
+          const x = st()
+          if (u.padTarget === x.selectedPad) return x.flash('Pick a different pad')
+          x.copyTrack(x.selectedPad, u.padTarget)
+          x.flash(`Track ${padLabel(x.selectedPad)} → ${padLabel(u.padTarget)}`)
+        },
+      },
+      { label: 'CLRTRK', action: () => st().clearTrack(st().selectedPad) },
+      {
+        label: 'QUANT',
+        action: () => {
+          st().quantizePattern()
+          st().flash('Sequence quantized to grid')
+        },
+      },
+      { label: 'SEQ', action: () => st().set({ page: 0, cursor: 0 }) },
     ],
   }
 }
@@ -1002,6 +1136,12 @@ function otherScreen(): Screen {
         options: ['velocity', 'tune'] as const,
         format: (v) => v.toUpperCase(),
       }),
+      toggleParam(
+        'T.C.',
+        (x) => x.master.timingCorrect,
+        (v) => st().setMaster({ timingCorrect: v }),
+        ['ON', 'OFF (free)'],
+      ),
       toggleParam(
         'FullLvl',
         (x) => x.fullLevel,

@@ -63,6 +63,12 @@ export interface PadParams {
   cutoff: number
   /** Q */
   resonance: number
+  /** Filter envelope depth in octaves, -6..6 (sweeps from cutoff + depth back to cutoff) */
+  filterEnvAmount: number
+  /** Filter envelope decay, ms */
+  filterEnvDecay: number
+  /** 0..1 — softer hits close the filter, up to 4 octaves at full depth */
+  velocityToFilter: number
   /** 0..1 — how strongly velocity scales level */
   velocitySens: number
   retrigger: Retrigger
@@ -83,6 +89,11 @@ export interface Step {
   on: boolean
   /** 1..127 */
   velocity: number
+  /**
+   * Micro-timing as a fraction of one step (-0.5..0.5). Written when recording with
+   * TIMING CORRECT off; absent / 0 = exactly on the grid.
+   */
+  offset?: number
 }
 
 export interface Pattern {
@@ -150,4 +161,6 @@ export interface MasterSettings {
   metronome: boolean
   metronomeOnlyRec: boolean
   countIn: boolean
+  /** TIMING CORRECT: snap recorded hits to the step grid. Off keeps the exact feel. */
+  timingCorrect: boolean
 }

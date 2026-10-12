@@ -81,6 +81,8 @@ export function pressPad(position: number, velocity: number) {
     const mode = MODE_PADS[position]
     if (mode) s.setMode(mode)
     else s.set({ modeSelect: false })
+    // PAD14 STEP EDIT opens the per-track page of SEQ EDIT
+    if (position === 13) s.set({ page: 1 })
     return
   }
 

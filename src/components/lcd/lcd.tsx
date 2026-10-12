@@ -56,6 +56,7 @@ export function Lcd() {
       className={s.lcd}
       data-expanded={ui.expanded || undefined}
       aria-label="LCD screen"
+      data-hint="lcd"
       onDragOver={(e) => e.preventDefault()}
       onDrop={onDrop}
     >
@@ -73,6 +74,7 @@ export function Lcd() {
             <div
               key={p.label}
               data-index={i}
+              data-hint="lcd-field"
               role="spinbutton"
               tabIndex={-1}
               aria-label={p.label}

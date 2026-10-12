@@ -58,6 +58,7 @@ export function Mpc() {
           {qlinks.map((q, i) => (
             <div key={q.target + String(i)} className={s.qlink}>
               <HwButton
+                hint="qlink-after"
                 label="AFTER"
                 size="sm"
                 variant="dark"
@@ -92,6 +93,7 @@ export function Mpc() {
             <HwButton
               key={f}
               label={f}
+              hint={`fkey-${i}`}
               variant="white"
               size="md"
               ariaLabel={`${f} soft key`}
@@ -106,6 +108,7 @@ export function Mpc() {
       <div className={s.right}>
         <div className={s.knobs}>
           <Knob
+            hint="rec-gain"
             label="REC GAIN"
             value={master.recGain}
             onChange={(v) => {
@@ -114,6 +117,7 @@ export function Mpc() {
             }}
           />
           <Knob
+            hint="main-volume"
             label="MAIN VOLUME"
             value={master.volume}
             defaultValue={0.8}
@@ -126,6 +130,7 @@ export function Mpc() {
           <div className={s.row4}>
             {BANK_NAMES.map((name, i) => (
               <HwButton
+                hint="pad-bank"
                 key={name}
                 cap={name}
                 size="sm"
@@ -138,19 +143,28 @@ export function Mpc() {
           </div>
           <div className={s.row4}>
             <HwButton
+              hint="full-level"
               label="FULL LEVEL"
               size="sm"
               led={fullLevel}
               onPress={() => st().set({ fullLevel: !st().fullLevel })}
             />
-            <HwButton label="16 LEVELS" size="sm" led={sixteen} onPress={commands.sixteenLevels} />
             <HwButton
+              hint="16-levels"
+              label="16 LEVELS"
+              size="sm"
+              led={sixteen}
+              onPress={commands.sixteenLevels}
+            />
+            <HwButton
+              hint="next-seq"
               label="NEXT SEQ"
               size="sm"
               led={queued ? 'blink' : false}
               onPress={() => commands.nextSeq(st().shift ? -1 : 1)}
             />
             <HwButton
+              hint="track-mute"
               label="TRACK MUTE"
               size="sm"
               led={trackMute}
@@ -162,6 +176,7 @@ export function Mpc() {
         <div className={s.dataBlock}>
           <div className={s.areaTap}>
             <HwButton
+              hint="tap-tempo"
               label="TAP TEMPO"
               size="sm"
               led={noteRepeat}
@@ -176,6 +191,7 @@ export function Mpc() {
           </div>
           <div className={s.areaErase}>
             <HwButton
+              hint="erase"
               label="ERASE"
               size="sm"
               led={erase}
@@ -186,6 +202,7 @@ export function Mpc() {
           </div>
           <div className={s.areaMode}>
             <HwButton
+              hint="mode"
               label="MODE"
               size="sm"
               led={modeSelect ? 'blink' : false}
@@ -193,10 +210,11 @@ export function Mpc() {
             />
           </div>
           <div className={s.areaUndo}>
-            <HwButton label="UNDO SEQ" size="sm" onPress={() => st().undo()} />
+            <HwButton hint="undo-seq" label="UNDO SEQ" size="sm" onPress={() => st().undo()} />
           </div>
           <div className={s.cursorPad}>
             <HwButton
+              hint="cursor"
               cap="▲"
               size="sm"
               variant="dark"
@@ -204,6 +222,7 @@ export function Mpc() {
               onPress={() => commands.cursor('up')}
             />
             <HwButton
+              hint="cursor"
               cap="◀"
               size="sm"
               variant="dark"
@@ -211,6 +230,7 @@ export function Mpc() {
               onPress={() => commands.cursor('left')}
             />
             <HwButton
+              hint="cursor"
               cap="▶"
               size="sm"
               variant="dark"
@@ -218,6 +238,7 @@ export function Mpc() {
               onPress={() => commands.cursor('right')}
             />
             <HwButton
+              hint="cursor"
               cap="▼"
               size="sm"
               variant="dark"
@@ -226,10 +247,11 @@ export function Mpc() {
             />
           </div>
           <div className={s.areaMain}>
-            <HwButton label="MAIN" size="sm" onPress={() => st().setMode('main')} />
+            <HwButton hint="main" label="MAIN" size="sm" onPress={() => st().setMode('main')} />
           </div>
           <div className={s.areaWindow}>
             <HwButton
+              hint="window"
               label="WINDOW"
               size="sm"
               variant="orange"
@@ -243,6 +265,7 @@ export function Mpc() {
           <span className={s.groupLabel}>LOCATE</span>
           <div className={s.locate}>
             <HwButton
+              hint="shift"
               label="SHIFT"
               size="sm"
               led={shift}
@@ -250,6 +273,7 @@ export function Mpc() {
               onRelease={() => st().set({ shift: false })}
             />
             <HwButton
+              hint="locate-bar"
               label="◀◀ BAR"
               size="sm"
               variant="dark"
@@ -257,15 +281,23 @@ export function Mpc() {
               onPress={() => commands.locateBar(-1)}
             />
             <HwButton
+              hint="locate-bar"
               label="BAR ▶▶"
               size="sm"
               variant="dark"
               ariaLabel="Next bar"
               onPress={() => commands.locateBar(1)}
             />
-            <HwButton label="PLAY START" size="lg" variant="cream" onPress={commands.playStart} />
+            <HwButton
+              hint="play-start"
+              label="PLAY START"
+              size="lg"
+              variant="cream"
+              onPress={commands.playStart}
+            />
             <span />
             <HwButton
+              hint="locate-step"
               label="◀ STEP"
               size="sm"
               variant="dark"
@@ -273,6 +305,7 @@ export function Mpc() {
               onPress={() => commands.locateStep(-1)}
             />
             <HwButton
+              hint="locate-step"
               label="STEP ▶"
               size="sm"
               variant="dark"
@@ -285,6 +318,7 @@ export function Mpc() {
 
         <div className={s.transport}>
           <HwButton
+            hint="rec"
             label="REC"
             size="lg"
             variant="red"
@@ -292,14 +326,16 @@ export function Mpc() {
             onPress={() => commands.record('rec')}
           />
           <HwButton
+            hint="overdub"
             label="OVER DUB"
             size="lg"
             variant="red"
             led={recLed('overdub')}
             onPress={() => commands.record('overdub')}
           />
-          <HwButton label="STOP" size="lg" variant="cream" onPress={commands.stop} />
+          <HwButton hint="stop" label="STOP" size="lg" variant="cream" onPress={commands.stop} />
           <HwButton
+            hint="play"
             label="PLAY"
             size="lg"
             variant="cream"

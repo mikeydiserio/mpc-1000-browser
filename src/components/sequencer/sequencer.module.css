@@ -260,6 +260,31 @@ input:focus-visible {
   font-size: 10px;
 }
 
+.actions button[data-on] {
+  color: #1b2610;
+  background: linear-gradient(180deg, #c8dc93 0%, #9fb86a 100%);
+  box-shadow: 0 2px 0 #3e4a24;
+}
+
+.shiftBtns {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  text-transform: none;
+}
+
+.shiftBtns button {
+  width: 22px;
+  height: 18px;
+  padding: 0;
+  font-size: 9px;
+  color: #26282b;
+  border: 0;
+  border-radius: 2px;
+  background: linear-gradient(180deg, #cfd1d3 0%, #a6a9ac 100%);
+  cursor: pointer;
+}
+
 .actions button:disabled {
   opacity: 0.45;
   cursor: not-allowed;
@@ -508,6 +533,12 @@ input:focus-visible {
 .cell[data-on]::after {
   opacity: calc(0.45 + var(--vel) * 0.55);
   transform: scaleY(calc(0.35 + var(--vel) * 0.65));
+}
+
+/* Off-grid (T.C. off) events: drawn narrower and nudged by their micro-timing */
+.cell[data-loose]::after {
+  inset: 0 25%;
+  transform: translateX(calc(var(--off) * 200%)) scaleY(calc(0.35 + var(--vel) * 0.65));
 }
 
 .cell:hover {
