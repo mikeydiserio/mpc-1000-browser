@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { bounce } from '../../audio/bounce'
 import { engine } from '../../audio/engine'
+import { MACHINES } from '../../audio/machines/registry'
 import { bindInput, initMidi, listMidiInputs } from '../../audio/midi'
 import { sampler } from '../../audio/sampler'
 import { stepSeconds } from '../../audio/timing'
@@ -13,10 +14,10 @@ import {
   exportKit,
   exportProject,
   importFile,
-  loadDefaultKit,
   loadFilesToPads,
   newProject,
 } from '../../state/library'
+import { loadMachine } from '../../state/machines'
 import { MODE_LABELS } from '../../state/pad-input'
 import { AUDIO_ACCEPT, pickFiles } from '../../state/pick-files'
 import { type MpcState, useMpc } from '../../state/store'
@@ -31,6 +32,7 @@ import {
   type QLinkTarget,
   STEP_RESOLUTIONS,
 } from '../../state/types'
+import { openSoundPicker } from '../sound-picker/picker-store'
 import s from './lcd.module.css'
 import { confirmed, type LcdUi, useLcdUi } from './lcd-ui'
 import {
@@ -80,6 +82,7 @@ export const MODE_TITLES: Record<LcdMode, string> = {
   midi: 'MIDI/SYNC',
   other: 'OTHER',
   slider: 'Q-LINK SLIDER',
+  machine: 'MACHINE',
 }
 
 function sampleName(state: MpcState, pad: number) {
@@ -814,11 +817,8 @@ function loadScreen(state: MpcState): Screen {
         },
       },
       {
-        label: 'KIT',
-        action: async () => {
-          await loadDefaultKit(st().bank * PADS_PER_BANK)
-          st().flash(`Factory kit → bank ${BANK_NAMES[st().bank]}`)
-        },
+        label: 'BROWSE',
+        action: () => openSoundPicker(st().selectedPad),
       },
       {
         label: 'OPEN',
@@ -1188,6 +1188,56 @@ function sliderScreen(state: MpcState): Screen {
   }
 }
 
+// ─── MACHINE (classic drum machines) ─────────────────────────────────────────
+
+function machineScreen(state: MpcState, u: LcdUi): Screen {
+  const machine = MACHINES[u.machine]!
+  const load = () => {
+    const kitOnly = ui().machineKitOnly
+    if (!kitOnly && !confirmed('machine')) {
+      return st().flash(`LOAD again to replace all sequences with ${machine.name}`)
+    }
+    void loadMachine(machine.id, { kitOnly, bank: st().bank })
+  }
+  return {
+    title: `DRUM MACHINE ${machine.name}`,
+    columns: 1,
+    visual: <p className={s.note}>{machine.blurb}</p>,
+    params: [
+      choiceParam('Machine', {
+        get: () => ui().machine,
+        set: (v) => useLcdUi.setState({ machine: v }),
+        options: range(MACHINES.length),
+        format: (v) => MACHINES[v]!.name,
+      }),
+      toggleParam(
+        'Load',
+        () => ui().machineKitOnly,
+        (v) => useLcdUi.setState({ machineKitOnly: v }),
+        [`KIT ONLY → bank ${BANK_NAMES[state.bank]}`, 'KIT + GROOVES + TEMPO'],
+      ),
+      infoParam(
+        'Grooves',
+        `${machine.patterns.map((p) => p.name).join(', ')} @ ${machine.bpm} BPM`,
+      ),
+      infoParam('Sounds', `${machine.voices.length} pads`),
+    ],
+    fkeys: [
+      ...MACHINES.slice(0, 4).map((m, i) => ({
+        label: m.name.replace('TR-', '').replace('LinnDrum', 'LINN'),
+        active: u.machine === i,
+        action: () => useLcdUi.setState({ machine: i }),
+      })),
+      {
+        label: 'MPC',
+        active: u.machine === 4,
+        action: () => useLcdUi.setState({ machine: 4 }),
+      },
+      { label: 'LOAD', active: u.confirm === 'machine', action: load },
+    ],
+  }
+}
+
 function modeSelectScreen(): Screen {
   return {
     title: 'MODE — PRESS A PAD',
@@ -1240,5 +1290,7 @@ export function buildScreen(state: MpcState, u: LcdUi): Screen {
       return otherScreen()
     case 'slider':
       return sliderScreen(state)
+    case 'machine':
+      return machineScreen(state, u)
   }
 }

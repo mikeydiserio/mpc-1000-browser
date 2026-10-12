@@ -3,6 +3,7 @@ import { loadFilesToPads } from '../../state/library'
 import { MODE_LABELS, PAD_KEYS, pressPad, releasePad, usePadsDown } from '../../state/pad-input'
 import { useMpc } from '../../state/store'
 import { PADS_PER_BANK } from '../../state/types'
+import { openSoundPicker } from '../sound-picker/picker-store'
 import s from './pads.module.css'
 
 /** Visual order: PAD13–16 on top, PAD1–4 at the bottom, like the hardware. */
@@ -72,6 +73,11 @@ function Pad({ position, topSilk }: { position: number; topSilk?: string }) {
           // Hit near the top edge = harder, like velocity-sensitive rubber
           const ratio = 1 - (e.clientY - r.top) / r.height
           pressPad(position, Math.round(45 + Math.min(1, Math.max(0, ratio)) * 82))
+        }}
+        onContextMenu={(e) => {
+          // Right-click: choose this pad's sound without playing it
+          e.preventDefault()
+          openSoundPicker(pad)
         }}
         onPointerUp={() => releasePad(position)}
         onPointerCancel={() => releasePad(position)}

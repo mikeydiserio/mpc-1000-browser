@@ -1,47 +1,12 @@
+import { chain, env, filter, noise, shaper, softClip } from './synth'
+import type { MachineDef, MachineVoice } from './types'
+
 /**
- * Synthesized starter kit so the machine makes sound with zero downloads. Every voice is
- * rendered once through an OfflineAudioContext and then behaves like any loaded sample.
+ * The browser MPC's own starter kit: a mixed synthesized kit (drums, 808 sub, blip, chord
+ * stab) that loads with every new project.
  */
 
-const RATE = 44100
-
-interface KitVoice {
-  name: string
-  seconds: number
-  render: (ctx: OfflineAudioContext) => void
-}
-
-function noise(ctx: BaseAudioContext, seconds: number) {
-  const buf = ctx.createBuffer(1, Math.ceil(ctx.sampleRate * seconds), ctx.sampleRate)
-  const d = buf.getChannelData(0)
-  for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1
-  const src = ctx.createBufferSource()
-  src.buffer = buf
-  return src
-}
-
-function env(ctx: BaseAudioContext, peak: number, attack: number, decay: number, at = 0) {
-  const g = ctx.createGain()
-  g.gain.setValueAtTime(0, at)
-  g.gain.linearRampToValueAtTime(peak, at + attack)
-  g.gain.exponentialRampToValueAtTime(0.0001, at + attack + decay)
-  return g
-}
-
-function filter(ctx: BaseAudioContext, type: BiquadFilterType, freq: number, q = 0.7) {
-  const f = ctx.createBiquadFilter()
-  f.type = type
-  f.frequency.value = freq
-  f.Q.value = q
-  return f
-}
-
-function chain(...nodes: AudioNode[]) {
-  for (let i = 0; i < nodes.length - 1; i++) nodes[i]!.connect(nodes[i + 1]!)
-  return nodes[nodes.length - 1]!
-}
-
-/** Six detuned square partials — the classic 808/909 metal source. */
+/** Six detuned square partials around a base pitch — the factory kit's cymbal source. */
 function metal(ctx: BaseAudioContext, base: number, out: AudioNode, seconds: number) {
   for (const ratio of [2, 3, 4.16, 5.43, 6.79, 8.21]) {
     const o = ctx.createOscillator()
@@ -53,7 +18,7 @@ function metal(ctx: BaseAudioContext, base: number, out: AudioNode, seconds: num
   }
 }
 
-function tom(freq: number): KitVoice['render'] {
+function tom(freq: number): MachineVoice['render'] {
   return (ctx) => {
     const o = ctx.createOscillator()
     o.frequency.setValueAtTime(freq * 1.7, 0)
@@ -66,17 +31,54 @@ function tom(freq: number): KitVoice['render'] {
   }
 }
 
-const KIT: KitVoice[] = [
+/** The factory kit's chord hit: a filter-swept, detuned-saw minor 9, `transpose` semitones from C. */
+function stab(transpose: number): MachineVoice['render'] {
+  return (ctx) => {
+    const lp = filter(ctx, 'lowpass', 600, 4)
+    lp.frequency.setValueAtTime(4200, 0)
+    lp.frequency.exponentialRampToValueAtTime(500, 0.5)
+    chain(lp, env(ctx, 0.2, 0.004, 0.85), ctx.destination)
+    for (const midi of [48, 55, 58, 62, 63]) {
+      for (const detune of [-7, 7]) {
+        const o = ctx.createOscillator()
+        o.type = 'sawtooth'
+        o.frequency.value = 440 * 2 ** ((midi + transpose - 69) / 12)
+        o.detune.value = detune
+        o.connect(lp)
+        o.start(0)
+      }
+    }
+  }
+}
+
+const STAB_PAD = { sendDelay: 0.3, sendReverb: 0.3 }
+
+export const CHORD_STAB: MachineVoice = {
+  id: 'ST',
+  name: 'ChordStab',
+  seconds: 1,
+  render: stab(0),
+  pad: STAB_PAD,
+}
+
+/**
+ * The factory chord hit rendered in another key. The other machines put these on the pads
+ * where their hardware only had duplicate voices, so a row of pads plays a chord progression.
+ */
+export function chordStab(id: string, name: string, transpose: number): MachineVoice {
+  return { id, name, seconds: 1, render: stab(transpose), pad: STAB_PAD }
+}
+
+const VOICES: MachineVoice[] = [
   {
+    id: 'BD',
     name: 'Kick',
     seconds: 0.7,
     render(ctx) {
       const o = ctx.createOscillator()
       o.frequency.setValueAtTime(160, 0)
       o.frequency.exponentialRampToValueAtTime(48, 0.11)
-      const shaper = ctx.createWaveShaper()
-      shaper.curve = softClip(1.6)
-      chain(o, shaper, env(ctx, 1, 0.002, 0.6), ctx.destination)
+      chain(o, shaper(ctx, softClip(1.6)), env(ctx, 1, 0.002, 0.6), ctx.destination)
       o.start(0)
       const click = noise(ctx, 0.02)
       chain(click, filter(ctx, 'highpass', 2500), env(ctx, 0.35, 0.0005, 0.012), ctx.destination)
@@ -84,6 +86,7 @@ const KIT: KitVoice[] = [
     },
   },
   {
+    id: 'SD',
     name: 'Snare',
     seconds: 0.45,
     render(ctx) {
@@ -99,6 +102,7 @@ const KIT: KitVoice[] = [
     },
   },
   {
+    id: 'CH',
     name: 'ClosedHat',
     seconds: 0.12,
     render(ctx) {
@@ -108,6 +112,7 @@ const KIT: KitVoice[] = [
     },
   },
   {
+    id: 'OH',
     name: 'OpenHat',
     seconds: 0.7,
     render(ctx) {
@@ -117,6 +122,7 @@ const KIT: KitVoice[] = [
     },
   },
   {
+    id: 'CP',
     name: 'Clap',
     seconds: 0.5,
     render(ctx) {
@@ -135,6 +141,7 @@ const KIT: KitVoice[] = [
     },
   },
   {
+    id: 'RS',
     name: 'Rim',
     seconds: 0.12,
     render(ctx) {
@@ -147,10 +154,11 @@ const KIT: KitVoice[] = [
       }
     },
   },
-  { name: 'TomLow', seconds: 0.6, render: tom(82) },
-  { name: 'TomMid', seconds: 0.55, render: tom(118) },
-  { name: 'TomHi', seconds: 0.5, render: tom(165) },
+  { id: 'LT', name: 'TomLow', seconds: 0.6, render: tom(82) },
+  { id: 'MT', name: 'TomMid', seconds: 0.55, render: tom(118) },
+  { id: 'HT', name: 'TomHi', seconds: 0.5, render: tom(165) },
   {
+    id: 'CY',
     name: 'Crash',
     seconds: 2.2,
     render(ctx) {
@@ -163,6 +171,7 @@ const KIT: KitVoice[] = [
     },
   },
   {
+    id: 'RD',
     name: 'Ride',
     seconds: 1.6,
     render(ctx) {
@@ -172,6 +181,7 @@ const KIT: KitVoice[] = [
     },
   },
   {
+    id: 'CB',
     name: 'Cowbell',
     seconds: 0.4,
     render(ctx) {
@@ -187,6 +197,7 @@ const KIT: KitVoice[] = [
     },
   },
   {
+    id: 'SH',
     name: 'Shaker',
     seconds: 0.18,
     render(ctx) {
@@ -200,19 +211,19 @@ const KIT: KitVoice[] = [
     },
   },
   {
+    id: 'SB',
     name: 'Sub808',
     seconds: 1.6,
     render(ctx) {
       const o = ctx.createOscillator()
       o.frequency.setValueAtTime(70, 0)
       o.frequency.exponentialRampToValueAtTime(49, 0.06)
-      const shaper = ctx.createWaveShaper()
-      shaper.curve = softClip(2.2)
-      chain(o, shaper, env(ctx, 0.8, 0.003, 1.5), ctx.destination)
+      chain(o, shaper(ctx, softClip(2.2)), env(ctx, 0.8, 0.003, 1.5), ctx.destination)
       o.start(0)
     },
   },
   {
+    id: 'BL',
     name: 'Blip',
     seconds: 0.25,
     render(ctx) {
@@ -230,44 +241,32 @@ const KIT: KitVoice[] = [
       o.start(0)
     },
   },
-  {
-    name: 'ChordStab',
-    seconds: 1,
-    render(ctx) {
-      const lp = filter(ctx, 'lowpass', 600, 4)
-      lp.frequency.setValueAtTime(4200, 0)
-      lp.frequency.exponentialRampToValueAtTime(500, 0.5)
-      chain(lp, env(ctx, 0.28, 0.004, 0.85), ctx.destination)
-      // C minor 9
-      for (const midi of [48, 55, 58, 62, 63]) {
-        for (const detune of [-7, 7]) {
-          const o = ctx.createOscillator()
-          o.type = 'sawtooth'
-          o.frequency.value = 440 * 2 ** ((midi - 69) / 12)
-          o.detune.value = detune
-          o.connect(lp)
-          o.start(0)
-        }
-      }
-    },
-  },
+  CHORD_STAB,
 ]
 
-function softClip(drive: number) {
-  const curve = new Float32Array(1024)
-  for (let i = 0; i < curve.length; i++) {
-    const x = (i / (curve.length - 1)) * 2 - 1
-    curve[i] = Math.tanh(x * drive) / Math.tanh(drive)
-  }
-  return curve
-}
-
-export async function renderDefaultKit(): Promise<{ name: string; buffer: AudioBuffer }[]> {
-  return Promise.all(
-    KIT.map(async (voice) => {
-      const ctx = new OfflineAudioContext(1, Math.ceil(RATE * voice.seconds), RATE)
-      voice.render(ctx)
-      return { name: voice.name, buffer: await ctx.startRendering() }
-    }),
-  )
+export const MPC_FACTORY: MachineDef = {
+  id: 'mpc',
+  name: 'MPC Factory',
+  blurb:
+    'This MPC’s own starter kit: punchy drums plus an 808 sub, a blip and a chord stab for quick sketches.',
+  bpm: 92,
+  swing: 50,
+  voices: VOICES.map((v) => {
+    if (v.id === 'CH' || v.id === 'OH') return { ...v, pad: { muteGroup: 1 } }
+    if (v.id === 'LT' || v.id === 'MT' || v.id === 'HT') return { ...v, pad: { sendReverb: 0.25 } }
+    return v
+  }),
+  patterns: [
+    {
+      name: 'Boom Bap',
+      length: 16,
+      tracks: {
+        BD: 'x......x..x.....',
+        SD: '....X.......X...',
+        CH: 'x.xox.x.x.xox.x.',
+        OH: '..............o.',
+      },
+    },
+  ],
+  song: [0],
 }

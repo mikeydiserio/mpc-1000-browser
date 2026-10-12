@@ -1,8 +1,8 @@
 import { del, get, keys, set } from 'idb-keyval'
-import { renderDefaultKit } from '../audio/default-kit'
 import { engine } from '../audio/engine'
 import { downloadBlob, encodeWav } from '../audio/wav'
-import { createPad, seedDemoPattern } from './defaults'
+import { createPad } from './defaults'
+import { loadMachine } from './machines'
 import { type ProjectData, projectSnapshot, useMpc } from './store'
 import type { PadParams, SampleMeta } from './types'
 
@@ -59,20 +59,6 @@ export async function loadFilesToPads(files: File[], firstPad: number) {
     (f) => f.type.startsWith('audio/') || /\.(wav|mp3|ogg|flac|aif+|m4a)$/i.test(f.name),
   )
   for (let i = 0; i < audio.length; i++) await loadFileToPad(audio[i]!, (firstPad + i) % 64)
-}
-
-export async function loadDefaultKit(bankOffset = 0) {
-  const kit = await renderDefaultKit()
-  const s = useMpc.getState()
-  kit.forEach(({ name, buffer }, i) => {
-    const meta = addBuffer(name, buffer)
-    s.assignSample(bankOffset + i, meta.id)
-  })
-  // Sensible kit defaults: hats choke each other, toms get a touch of reverb
-  s.setPad(bankOffset + 2, { muteGroup: 1 })
-  s.setPad(bankOffset + 3, { muteGroup: 1 })
-  for (const pad of [6, 7, 8]) s.setPad(bankOffset + pad, { sendReverb: 0.25 })
-  s.setPad(bankOffset + 15, { sendDelay: 0.3, sendReverb: 0.3 })
 }
 
 // ─── Autosave ────────────────────────────────────────────────────────────────
@@ -153,12 +139,7 @@ export async function newProject() {
     samples: {},
     patterns: useMpc.getInitialState().patterns,
   })
-  await loadDefaultKit()
-  useMpc.setState((s) => {
-    const patterns = s.patterns.slice()
-    patterns[0] = seedDemoPattern(structuredClone(patterns[0]!))
-    return { patterns }
-  })
+  await loadMachine('mpc')
 }
 
 // ─── Project files ───────────────────────────────────────────────────────────

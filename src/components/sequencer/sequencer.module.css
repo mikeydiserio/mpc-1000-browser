@@ -1,5 +1,5 @@
 .panel {
-  --hdr: 168px;
+  --hdr: 190px;
   --row: 26px;
   display: flex;
   flex-direction: column;
@@ -730,4 +730,107 @@ input:focus-visible {
 .cell[data-pitch="down"]::before {
   border-top-color: #2a6fa8;
   border-bottom-width: 0;
+}
+
+/* ─── Drum machine strip ──────────────────────────────────── */
+
+.machines {
+  display: grid;
+  grid-template-columns: auto repeat(5, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 6px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.machinesLabel {
+  float: left;
+  align-self: center;
+  padding: 0 6px 0 0;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--silk-dim);
+}
+
+.machineBtn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  min-width: 0;
+  padding: 7px 10px;
+  font-family: var(--font-silk);
+  text-align: left;
+  color: var(--silk);
+  border: 0;
+  border-radius: 4px;
+  background: linear-gradient(180deg, #2a2c30 0%, #1d1f22 100%);
+  box-shadow:
+    0 2px 0 #0a0a0b,
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 0 0 1px #34373b;
+  cursor: pointer;
+}
+
+.machineBtn b {
+  overflow: hidden;
+  font-size: 13px;
+  font-style: italic;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.machineBtn span {
+  overflow: hidden;
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--silk-dim);
+}
+
+.machineBtn:active {
+  transform: translateY(1px);
+  box-shadow:
+    0 1px 0 #0a0a0b,
+    inset 0 0 0 1px #34373b;
+}
+
+.machineBtn[data-loaded] {
+  box-shadow:
+    0 2px 0 #0a0a0b,
+    inset 0 0 0 1px #9fb86a;
+}
+
+.machineBtn[data-loaded] b {
+  color: #c8dc93;
+}
+
+.machineBtn[data-armed] {
+  background: linear-gradient(180deg, #f0a23b 0%, #c96f17 100%);
+}
+
+.machineBtn[data-armed] b,
+.machineBtn[data-armed] span {
+  color: #2a1700;
+}
+
+.machineBtn[data-busy] {
+  opacity: 0.7;
+  cursor: progress;
+}
+
+@media (max-width: 900px) {
+  .machines {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .machinesLabel {
+    grid-column: 1 / -1;
+  }
 }

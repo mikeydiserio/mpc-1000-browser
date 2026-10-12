@@ -22,9 +22,10 @@ That strip also describes any control you hover over.
 2. Press PLAY START (or Space). A demo beat plays in Sequence 01; the green column is the playhead.
 3. Click empty cells in the Pattern Sequencer to add hits; click lit cells to remove them. Drag to paint.
 4. Press OVER DUB while playing and tap pads in time — your hits are written into the pattern.
-5. Drag a WAV/MP3 from your computer onto a pad to replace its sound.
-6. Press MODE, then PAD6 (TRIM) to cut the sound, or PAD7 (PROGRAM) to tune and shape it.
-7. Your work autosaves in this browser. MODE → PAD3 (SAVE) exports a project file or a WAV.
+5. Want a classic sound? Click TR-808, TR-909, TR-606 or LinnDrum in the Drum machines strip — the kit and matching grooves load together.
+6. Drag a WAV/MP3 from your computer onto a pad to replace its sound.
+7. Press MODE, then PAD6 (TRIM) to cut the sound, or PAD7 (PROGRAM) to tune and shape it.
+8. Your work autosaves in this browser. MODE → PAD3 (SAVE) exports a project file or a WAV.
 
 - Audio starts on your first click or key press — browsers block sound until you interact with the page.
 - Use Chrome or Edge for MIDI controllers (Web MIDI). Everything else works in Firefox and Safari too.
@@ -41,7 +42,7 @@ That strip also describes any control you hover over.
 
 - **LCD screen** — Shows the current mode. Click a field to select it (it turns dark), then turn the DATA wheel, scroll your mouse, or drag up/down on it to change the value. Hold SHIFT for bigger jumps. Drop audio files here to load them from the selected pad onward.
 - **F1 – F6** — Soft keys. Their job changes per screen and is printed in the boxes along the bottom of the LCD, directly above each key.
-- **Pads 1–16** — Play the sample assigned to that pad in the active bank. Hitting near the top of a pad plays louder (velocity). Drop an audio file on a pad to load it. With MODE lit, a pad opens the screen printed above it instead of playing.
+- **Pads 1–16** — Play the sample assigned to that pad in the active bank. Hitting near the top of a pad plays louder (velocity). Drop an audio file on a pad to load it, or right-click a pad to open the sound browser and choose a different sound. With MODE lit, a pad opens the screen printed above it instead of playing.
 
 ### Right — knobs, bank and level
 
@@ -85,8 +86,9 @@ Press **MODE**, then a pad, to open the screen printed above it:
 | Pad | Screen |
 |---|---|
 | **PAD1 — SLIDER** | Choose what Q1 / Q2 control |
-| **PAD2 — LOAD** | Load files, the factory kit, projects and kits |
+| **PAD2 — LOAD** | Load files, browse sounds, open projects and kits |
 | **PAD3 — SAVE** | Export project / kit, bounce WAV, new project |
+| **PAD4 — MACHINE** | Load a classic drum machine (808, 909, 606, LinnDrum) with matching grooves |
 | **PAD5 — RECORD** | Sample from mic / line in, or resample the main output |
 | **PAD6 — TRIM** | Waveform editing: start / end, normalize, crop, chop |
 | **PAD7 — PROGRAM** | Pad sound design: level, tune, envelope, filter, play mode, retrigger, copy |
@@ -277,7 +279,7 @@ Get sounds in. Drag-and-drop works everywhere: onto a pad, or onto the screen to
 |---|---|
 | `FILE` | Pick an audio file for the selected pad |
 | `MULTI` | Pick several files — they fill pads from the selected one onward |
-| `KIT` | Load the built-in factory drum kit into the current bank |
+| `BROWSE` | Open the sound browser for the selected pad (project samples and every drum-machine voice) |
 | `OPEN` | Open a project (.mpcweb) or a kit (.mpckit) |
 | `CLEAR` | Remove the sample from the pad |
 | `PLAY` | Audition the pad |
@@ -344,6 +346,28 @@ Chain sequences. With Song ON, PLAY runs through the steps in order and loops.
 | `SONG` | Song mode on/off |
 | `PLAY` | Play the song from the top |
 
+### MACHINE (PAD4)
+
+*Open:* MODE → PAD4, or the Drum machines strip in the sequencer
+
+Classic drum machines, rebuilt by synthesis (no original ROM samples): TR-808 (1980 — electro, Miami bass, hip-hop), TR-909 (1983 — house, techno), TR-606 (1981 — acid, electro), LinnDrum (1982 — 80s pop, funk; an approximation of its sampled acoustic drums) and the MPC factory kit. A full load puts the 16 sounds on bank A in the same layout as the factory kit (PAD1 kick, PAD2 snare, PAD3 closed hat, PAD4 open hat, PAD5 clap…), writes its grooves into the first sequences (three, or four on the 909), sets the tempo and swing, and builds a song chain from them. The real 909 and 606 spent several slots on louder or longer copies of the same drums; here those pads hold the factory kit’s chord hit instead, in five keys (Cm9, Ebm9, Fm9, Gm9, Bbm9) so a row of pads plays a progression. The 909 adds a fourth groove, Deep Stabs, that uses them.
+
+| Field | What it does |
+|---|---|
+| **Machine** | Which drum machine |
+| **Load** | KIT + GROOVES + TEMPO replaces every sequence; KIT ONLY just puts the sounds on the current bank |
+| **Grooves** | The patterns that come with it, and its tempo |
+| **Sounds** | How many pads it fills |
+
+| F-key | Action |
+|---|---|
+| `808` | Select the TR-808 |
+| `909` | Select the TR-909 |
+| `606` | Select the TR-606 |
+| `LINN` | Select the LinnDrum |
+| `MPC` | Select the MPC factory kit |
+| `LOAD` | Load it (a full load asks for a second press, since it replaces your sequences) |
+
 ### MIDI/SYNC (PAD9)
 
 *Open:* MODE → PAD9
@@ -388,6 +412,7 @@ Pick which parameter each Q-Link slider controls.
 The panel to the right of the MPC.
 
 - **REC / OVERDUB / STOP / PLAY** — Same as the transport buttons on the MPC. PLAY here always starts from step 1.
+- **Drum machines** — One click loads a classic drum machine — TR-808, TR-909, TR-606, LinnDrum or the MPC factory kit — onto bank A, with matching grooves in the first sequences, the right tempo and a song chain. If you already have beats, the button turns orange: click again to confirm. For the sounds only, use MODE → PAD4 (MACHINE) → Load: KIT ONLY.
 - **Sequence buttons 01–16** — Pick a sequence. A dot means it has hits. While playing, the choice blinks and switches at the end of the loop.
 - **Steps 8–64** — Sequence length. With 1/16 resolution, 16 steps = 1 bar and 64 steps = 4 bars.
 - **Resolution** — Note value of one step: 1/8, 1/16, 1/16T (triplets) or 1/32.
@@ -403,6 +428,7 @@ The panel to the right of the MPC.
 - **Song chain** — The order sequences play in. × removes a step; “+ Seq NN” appends the current sequence.
 - **Bank A–D** — Which 16 pads the rows show (same as PAD BANK).
 - **Track name** — Pad number and sample. Click to select the pad for editing; the red LED flashes when it plays.
+- **⇄** — Change this pad’s sound: opens the sound browser with every sample in the project and every drum-machine voice. Click a sound to put it on the pad and hear it.
 - **M** — Mute this track.
 - **S** — Solo — only soloed tracks play.
 - **Step grid** — Click to add/remove a hit, drag to paint several. Shift-click adds an accent (velocity 127). Right-click a hit to cycle its velocity 127 → 100 → 70 → 40. Bar height and brightness show velocity.
@@ -412,6 +438,20 @@ The panel to the right of the MPC.
 - **GUIDE** — Open this guide. Shortcut: ? key.
 
 ## How to…
+
+### Start from a classic drum machine
+
+1. Click TR-909 in the Drum machines strip (click again if it asks to replace your sequences).
+2. Press PLAY START — the House groove plays at 124 BPM. Sequence 02 is Techno, 03 a snare build and 04 Deep Stabs, which plays the chord hits on PAD12–16.
+3. Turn Song mode ON to hear the grooves arranged into a track.
+4. Mix machines: MODE → PAD4, pick the TR-808, set Load to KIT ONLY, switch PAD BANK to B and press LOAD — now bank B has 808 sounds to layer with your 909 beat.
+
+### Change the sound on a pad
+
+1. Click ⇄ on the pad’s row in the sequencer, right-click the pad itself, or press MODE → PAD2 (LOAD) → F3 BROWSE.
+2. Click any sound — a sample already in the project or a voice from any drum machine — to put it on the pad. It plays as you choose, so you can work down the list by ear (↑↓ moves between sounds).
+3. ▶ previews a sound without changing the pad. Type in the search box to find sounds across every machine, e.g. “clap” or “stab”.
+4. Use ◀ ▶ next to the pad name to move to the neighbouring pad and keep building the kit. The pad keeps its tune, filter and envelope settings; Load file… brings in your own audio.
 
 ### Program a beat from scratch
 

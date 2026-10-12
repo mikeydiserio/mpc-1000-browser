@@ -30,8 +30,8 @@ renderer that reuses the exact live voice chain for WAV export.
 
 | Control | What it does |
 |---|---|
-| Pads | 4 banks × 16. Velocity from hit height. Drop audio files on a pad to load it |
-| MODE + pad | Screen select (labels above pads): TRIM, PROGRAM, MIXER, EFFECT, RECORD, LOAD, SAVE, SONG, SEQ EDIT, MIDI, OTHER, SLIDER |
+| Pads | 4 banks × 16. Velocity from hit height. Drop audio files on a pad to load it; right-click a pad to browse sounds |
+| MODE + pad | Screen select (labels above pads): TRIM, PROGRAM, MIXER, EFFECT, RECORD, LOAD, MACHINE, SAVE, SONG, SEQ EDIT, MIDI, OTHER, SLIDER |
 | F1–F6 | Soft keys for the current screen |
 | DATA wheel / cursor | Edit the highlighted field (also mouse wheel or drag on a field) |
 | WINDOW | Enlarge the screen for detailed editing |
@@ -50,6 +50,14 @@ mute group, reverse, retrigger, copy/swap pads).
 **Sequencer** — 16 patterns, 8–64 steps, 1/8 · 1/16 · 1/16T · 1/32 resolution, swing, paint-drag
 editing, right-click velocity cycling, per-pad velocity lane, mute/solo, copy/double/clear/undo,
 Timing Correct on/off with quantize, track shift / copy, song-mode chaining, WAV bounce.
+
+**Drum machines** — TR-808, TR-909, TR-606, LinnDrum and the MPC factory kit, synthesized
+offline (`src/audio/machines/`). One click loads a kit with matching grooves, tempo and song chain;
+KIT ONLY loads just the sounds onto any bank. Slots the 909/606 spent on duplicate voices carry the
+factory chord hit in five keys instead.
+
+**Sound browser** — ⇄ on a sequencer row, right-click a pad, or LOAD → BROWSE: pick any project
+sample or any drum-machine voice for a pad, hearing each as you choose; search across machines.
 
 **Keyboard** — `Z X C V / A S D F / Q W E R / 1 2 3 4` = pads 1–16 (Shift = accent), Space =
 play/stop, arrows = cursor, `,` `.` = decrement / increment field. Web MIDI notes 37–52 play the pads.

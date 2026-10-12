@@ -123,6 +123,7 @@ export type LcdMode =
   | 'midi'
   | 'other'
   | 'slider'
+  | 'machine'
 
 export type RecordState = 'off' | 'rec' | 'overdub'
 

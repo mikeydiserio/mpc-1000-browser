@@ -13,6 +13,7 @@ class Engine {
   private buffers = new Map<string, AudioBuffer>()
   private reversed = new Map<string, AudioBuffer>()
   private pending: { fx: FxSettings; bpm: number; volume: number } | null = null
+  private auditioning: AudioBufferSourceNode | null = null
 
   /** Returns a running context. Safe to call from any user-gesture handler. */
   ensure(): AudioContext {
@@ -82,6 +83,20 @@ class Engine {
   stopAll() {
     if (!this.ctx) return
     this.pool?.stopAll(this.ctx.currentTime)
+  }
+
+  /** Play a buffer straight to the master bus (sound browser preview); cuts the last preview. */
+  audition(buffer: AudioBuffer) {
+    const ctx = this.ensure()
+    if (!this.chain) return
+    this.auditioning?.stop()
+    const source = new AudioBufferSourceNode(ctx, { buffer })
+    source.connect(this.chain.master)
+    source.onended = () => {
+      if (this.auditioning === source) this.auditioning = null
+    }
+    source.start()
+    this.auditioning = source
   }
 
   click(when: number, accent: boolean) {

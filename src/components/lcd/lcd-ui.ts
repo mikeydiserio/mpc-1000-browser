@@ -18,6 +18,8 @@ export interface LcdUi {
   resampleLoops: number
   padTarget: number
   kitBank: number
+  machine: number
+  machineKitOnly: boolean
   expanded: boolean
   confirm: string | null
 }
@@ -38,6 +40,8 @@ export const useLcdUi = create<LcdUi>(() => ({
   resampleLoops: 1,
   padTarget: 16,
   kitBank: 0,
+  machine: 0,
+  machineKitOnly: false,
   expanded: false,
   confirm: null,
 }))

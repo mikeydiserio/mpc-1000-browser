@@ -6,6 +6,8 @@ import { useLcdUi } from './components/lcd/lcd-ui'
 import { adjustCursorParam } from './components/lcd/params'
 import { Mpc } from './components/mpc/mpc'
 import { Sequencer } from './components/sequencer/sequencer'
+import { usePicker } from './components/sound-picker/picker-store'
+import { SoundPicker } from './components/sound-picker/sound-picker'
 import { Guide } from './guide/guide'
 import { openGuide, useGuide } from './guide/guide-store'
 import { HintBar } from './guide/hint-bar'
@@ -43,6 +45,7 @@ export function App() {
       {ready ? null : <p className={s.boot}>Loading sounds…</p>}
       <HintBar />
       <Guide />
+      <SoundPicker />
     </main>
   )
 }
@@ -84,7 +87,7 @@ function useKeyboard() {
     const down = (e: KeyboardEvent) => {
       if (e.key === 'Shift') useMpc.getState().set({ shift: true })
       if (isTyping(e.target) || e.metaKey || e.ctrlKey || e.altKey) return
-      if (useGuide.getState().open) return
+      if (useGuide.getState().open || usePicker.getState().pad !== null) return
       if (e.key === '?') {
         e.preventDefault()
         openGuide()

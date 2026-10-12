@@ -90,17 +90,3 @@ export function createQLinks(): QLinkSlider[] {
     { target: 'cutoff', position: 1 },
   ]
 }
-
-/** A playable starter beat for pattern 1 using the default kit layout. */
-export function seedDemoPattern(pattern: Pattern): Pattern {
-  const set = (pad: number, steps: number[], velocity = 100) => {
-    for (const s of steps) pattern.tracks[pad]![s] = { on: true, velocity }
-  }
-  // Pad 1 kick, 2 snare, 3 closed hat, 4 open hat (see default-kit.ts ordering)
-  set(0, [0, 7, 10])
-  set(1, [4, 12], 110)
-  set(2, [0, 2, 4, 6, 8, 10, 12, 14], 80)
-  set(2, [3, 11], 50)
-  set(3, [14], 70)
-  return pattern
-}

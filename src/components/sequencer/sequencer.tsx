@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
+import { MACHINES } from '../../audio/machines/registry'
 import { stepsPerBeat } from '../../audio/timing'
 import { usePadActivity, usePlayhead } from '../../audio/transport'
 import { commands } from '../../state/commands'
 import { padLabel, seqLabel } from '../../state/format'
+import { loadMachine, useMachines } from '../../state/machines'
 import { useMpc } from '../../state/store'
 import {
   BANK_NAMES,
@@ -12,6 +14,7 @@ import {
   PATTERN_COUNT,
   STEP_RESOLUTIONS,
 } from '../../state/types'
+import { openSoundPicker } from '../sound-picker/picker-store'
 import s from './sequencer.module.css'
 
 const LENGTHS = [8, 16, 24, 32, 40, 48, 56, 64]
@@ -28,6 +31,7 @@ export function Sequencer() {
         </div>
         <MiniTransport />
       </header>
+      <MachineStrip />
       <PatternBank />
       <Toolbar />
       <SongChain />
@@ -76,6 +80,60 @@ function MiniTransport() {
         ▶ PLAY
       </button>
     </div>
+  )
+}
+
+const MACHINE_TAGS: Record<string, string> = {
+  tr808: '1980 · electro, hip-hop',
+  tr909: '1983 · house, techno',
+  tr606: '1981 · acid, electro',
+  linndrum: '1982 · 80s pop, funk',
+  mpc: 'factory · boom bap',
+}
+
+/** One-click classic kits: loads the machine's sounds plus matching grooves, tempo and song. */
+function MachineStrip() {
+  const busy = useMachines((m) => m.busy)
+  const loaded = useMachines((m) => m.loaded)
+  const hasHits = useMpc((x) =>
+    x.patterns.some((p) => p.tracks.some((t) => t.some((step) => step.on))),
+  )
+  const [armed, setArmed] = useState<string | null>(null)
+  const timer = useRef<ReturnType<typeof setTimeout>>(undefined)
+
+  const choose = (id: string) => {
+    if (busy) return
+    // Replacing existing sequences needs a second click within 3 s
+    if (hasHits && armed !== id) {
+      setArmed(id)
+      clearTimeout(timer.current)
+      timer.current = setTimeout(() => setArmed(null), 3000)
+      return
+    }
+    setArmed(null)
+    void loadMachine(id)
+  }
+
+  return (
+    <fieldset className={s.machines} aria-label="Load a drum machine" data-hint="seq-machines">
+      <legend className={s.machinesLabel}>Drum machines</legend>
+      {MACHINES.map((m) => (
+        <button
+          type="button"
+          key={m.id}
+          className={s.machineBtn}
+          data-loaded={loaded === m.id || undefined}
+          data-armed={armed === m.id || undefined}
+          data-busy={busy === m.id || undefined}
+          aria-busy={busy === m.id}
+          title={m.blurb}
+          onClick={() => choose(m.id)}
+        >
+          <b>{busy === m.id ? 'Building…' : armed === m.id ? 'Replace sequences?' : m.name}</b>
+          <span>{armed === m.id ? 'Click again to load' : MACHINE_TAGS[m.id]}</span>
+        </button>
+      ))}
+    </fieldset>
   )
 }
 
@@ -429,6 +487,15 @@ function TrackRow({ pad, length, beat }: { pad: number; length: number; beat: nu
           </span>
           <span className={s.trackNum}>{padLabel(pad)}</span>
           <span className={s.trackSample}>{name}</span>
+        </button>
+        <button
+          type="button"
+          className={s.ms}
+          data-hint="seq-sound"
+          aria-label={`Change the sound on ${padLabel(pad)}`}
+          onClick={() => openSoundPicker(pad)}
+        >
+          ⇄
         </button>
         <button
           type="button"
