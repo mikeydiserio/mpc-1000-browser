@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { stepsPerBeat } from '../../audio/timing'
 import { usePadActivity, usePlayhead } from '../../audio/transport'
@@ -311,7 +311,13 @@ function Grid() {
     for (let i = from; i <= to; i++) {
       const current = st().patterns[st().currentPattern]!.tracks[pad]![i]!
       if (current.on !== p.on) {
-        st().setStep(pad, i, { on: p.on, velocity: p.on ? p.velocity : current.velocity })
+        st().setStep(
+          pad,
+          i,
+          p.on
+            ? { on: true, velocity: p.velocity, offset: 0, pitch: 0 }
+            : { on: false, velocity: current.velocity },
+        )
       }
     }
     p.pad = pad
@@ -376,6 +382,7 @@ function Grid() {
           <Playhead length={length} />
         </div>
         <VelocityLane />
+        <TuneLane />
       </div>
     </div>
   )
@@ -456,6 +463,7 @@ function TrackRow({ pad, length, beat }: { pad: number; length: number; beat: nu
           data-on={step.on || undefined}
           data-group={Math.floor(i / beat) % 2 === 1 || undefined}
           data-loose={(step.on && !!step.offset) || undefined}
+          data-pitch={step.on && step.pitch ? (step.pitch > 0 ? 'up' : 'down') : undefined}
           style={
             step.on
               ? ({ '--vel': step.velocity / 127, '--off': step.offset ?? 0 } as React.CSSProperties)
@@ -552,6 +560,141 @@ function VelocityLane() {
             {step.on ? <span style={{ transform: `scaleY(${step.velocity / 127})` }} /> : null}
           </span>
         ))}
+      </div>
+    </div>
+  )
+}
+
+const TUNE_RANGES = [12, 24] as const
+
+/** Bipolar per-step pitch automation for the selected track, in semitones. */
+function TuneLane() {
+  const pad = useMpc((x) => x.selectedPad)
+  const pattern = useMpc((x) => x.patterns[x.currentPattern]!)
+  const track = pattern.tracks[pad]!
+  const [range, setRange] = useState<(typeof TUNE_RANGES)[number]>(12)
+  const [readout, setReadout] = useState<string | null>(null)
+  const laneRef = useRef<HTMLDivElement>(null)
+  const dragging = useRef(false)
+
+  const stepAt = (clientX: number) => {
+    const r = laneRef.current!.getBoundingClientRect()
+    const step = Math.floor(((clientX - r.left) / r.width) * pattern.length)
+    return step >= 0 && step < pattern.length ? step : null
+  }
+
+  const setPitch = (step: number, pitch: number) => {
+    const x = st()
+    const current = x.patterns[x.currentPattern]!.tracks[pad]![step]!
+    if (!current.on) return
+    const value = Math.max(-24, Math.min(24, Math.round(pitch)))
+    if ((current.pitch ?? 0) !== value) x.setStep(pad, step, { pitch: value })
+    setReadout(`Step ${step + 1}: ${value > 0 ? '+' : ''}${value} st`)
+  }
+
+  const setFrom = (clientX: number, clientY: number) => {
+    const step = stepAt(clientX)
+    if (step === null) return
+    const r = laneRef.current!.getBoundingClientRect()
+    // Centre line = 0; top / bottom edge = ±range
+    setPitch(step, (0.5 - (clientY - r.top) / r.height) * 2 * range)
+  }
+
+  // Scroll over a bar for exact ±1 semitone nudges (non-passive so the page doesn't scroll)
+  useEffect(() => {
+    const el = laneRef.current
+    if (!el) return
+    const onWheel = (e: WheelEvent) => {
+      const step = stepAt(e.clientX)
+      if (step === null) return
+      const x = st()
+      const current = x.patterns[x.currentPattern]!.tracks[x.selectedPad]![step]!
+      if (!current.on) return
+      e.preventDefault()
+      setPitch(step, (current.pitch ?? 0) + (e.deltaY < 0 ? 1 : -1))
+    }
+    el.addEventListener('wheel', onWheel, { passive: false })
+    return () => el.removeEventListener('wheel', onWheel)
+  })
+
+  return (
+    <div className={s.velocity} style={{ '--len': pattern.length } as React.CSSProperties}>
+      <div className={s.velocityHead}>
+        <span>Tune</span>
+        <b>{readout ?? `${padLabel(pad)} ±${range} st`}</b>
+        <span className={s.shiftBtns}>
+          <button
+            type="button"
+            className={s.laneBtn}
+            aria-label={`Tune lane range, now ±${range} semitones`}
+            onClick={() => setRange(range === 12 ? 24 : 12)}
+          >
+            ±{range}
+          </button>
+          <button
+            type="button"
+            className={s.laneBtn}
+            aria-label={`Reset tune automation for ${padLabel(pad)}`}
+            onClick={() => {
+              st().pushUndo()
+              st().clearPitch(pad)
+              setReadout(null)
+            }}
+          >
+            Reset
+          </button>
+        </span>
+      </div>
+      {/* biome-ignore lint/a11y/noStaticElementInteractions: mouse/touch drawing surface (wheel and double-click edit too) */}
+      <div
+        ref={laneRef}
+        className={s.tuneLane}
+        data-hint="seq-tune"
+        data-dense={pattern.length > 32 || undefined}
+        onPointerDown={(e) => {
+          dragging.current = true
+          st().pushUndo()
+          e.currentTarget.setPointerCapture(e.pointerId)
+          setFrom(e.clientX, e.clientY)
+        }}
+        onPointerMove={(e) => {
+          if (dragging.current) setFrom(e.clientX, e.clientY)
+        }}
+        onPointerUp={() => {
+          dragging.current = false
+        }}
+        onPointerLeave={() => {
+          if (!dragging.current) setReadout(null)
+        }}
+        onDoubleClick={(e) => {
+          const step = stepAt(e.clientX)
+          if (step !== null) setPitch(step, 0)
+        }}
+      >
+        {track.slice(0, pattern.length).map((step, i) => {
+          const pitch = step.pitch ?? 0
+          return (
+            <span
+              key={i}
+              className={s.tuneBar}
+              data-on={step.on || undefined}
+              style={{ '--mag': Math.min(1, Math.abs(pitch) / range) } as React.CSSProperties}
+            >
+              {step.on && pitch !== 0 ? (
+                <>
+                  <span
+                    className={s.tuneFill}
+                    data-dir={pitch > 0 ? 'up' : 'down'}
+                    style={{ transform: 'scaleY(var(--mag))' }}
+                  />
+                  <span className={s.tuneValue} data-dir={pitch > 0 ? 'up' : 'down'}>
+                    {pitch > 0 ? `+${pitch}` : pitch}
+                  </span>
+                </>
+              ) : null}
+            </span>
+          )
+        })}
       </div>
     </div>
   )

@@ -110,7 +110,7 @@ export const PANEL: ControlGroup[] = [
       {
         id: '16-levels',
         name: '16 LEVELS',
-        text: 'Spreads the selected pad across all 16 pads: either 16 velocities (soft → hard) or 16 pitches (−4 to +11 semitones). Choose which in MODE → PAD10 (OTHER) → 16Lvl. Press again to turn off.',
+        text: 'Spreads the selected pad across all 16 pads: either 16 velocities (soft → hard) or 16 pitches (−4 to +11 semitones). Choose which in MODE → PAD10 (OTHER) → 16Lvl. Recording in TUNE mode writes each note’s pitch into the Tune lane. Press again to turn off.',
       },
       {
         id: 'next-seq',
@@ -566,6 +566,11 @@ export const SEQUENCER: Control[] = [
     text: 'Velocities of the selected track. Drag up/down across the bars to draw them.',
   },
   {
+    id: 'seq-tune',
+    name: 'Tune lane',
+    text: 'Per-step pitch automation for the selected track, in semitones on top of the pad’s own tune. Drag up/down across hits to draw pitches (centre line = 0), scroll over a hit for exact ±1 steps, double-click a hit to reset it. ±12 / ±24 sets the drawing range; Reset clears the whole track. Pitched hits show a small ▲/▼ marker in the grid.',
+  },
+  {
     id: 'seq-shift',
     name: '◀ shift ▶',
     text: 'Move the selected track one step earlier or later.',
@@ -608,6 +613,15 @@ export const WORKFLOWS: Workflow[] = [
       'Play the pads or keys in time. Hits snap to steps; turn T.C. OFF to keep your exact feel.',
       'Hold TAP TEMPO + a pad for machine-gun hi-hats (NOTE REPEAT).',
       'Hold ERASE + a pad to remove its hits as they go by. UNDO SEQ if you slip.',
+    ],
+  },
+  {
+    title: 'Play a melody or bassline from one sample',
+    steps: [
+      'Select the pad (e.g. A14 Sub808) and paint the rhythm in its row of the grid.',
+      'In the Tune lane below the grid, drag each hit up or down to set its note — the value shows in the lane header.',
+      'Scroll over a hit for exact semitone steps; switch the range to ±24 for two-octave jumps.',
+      'Or play it live: turn on 16 LEVELS (OTHER → 16Lvl: TUNE), press OVER DUB and play the pads — the pitches are recorded into the lane.',
     ],
   },
   {

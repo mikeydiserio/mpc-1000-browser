@@ -123,7 +123,7 @@ class Transport {
     // ERASE + pad: silently hold the pad so the scheduler wipes its events as they pass
     if (!s.erase) {
       engine.trigger(pad, s.pads, { velocity, bpm: s.bpm, pitchOffset })
-      if (s.playing && s.record !== 'off') this.recordHit(pad, velocity, now)
+      if (s.playing && s.record !== 'off') this.recordHit(pad, velocity, now, pitchOffset)
     }
 
     let nextRepeat = Number.POSITIVE_INFINITY
@@ -150,7 +150,7 @@ class Transport {
     return false
   }
 
-  private recordHit(pad: number, velocity: number, time: number) {
+  private recordHit(pad: number, velocity: number, time: number, pitch = 0) {
     const s = useMpc.getState()
     const pattern = s.patterns[s.currentPattern]!
     const stepDur = stepSeconds(pattern.resolution, s.bpm)
@@ -169,7 +169,8 @@ class Transport {
     // Not yet booked by the scheduler: stop it re-firing the note we just played live.
     // Early (negative-offset) notes are booked one step ahead, so they never re-fire.
     if (best === upcoming && offset >= 0) this.suppress.add(`${pad}:${best.step}`)
-    s.setStep(pad, best.step, { on: true, velocity: Math.round(velocity), offset })
+    // 16 LEVELS (tune) takes are written as per-step pitch automation
+    s.setStep(pad, best.step, { on: true, velocity: Math.round(velocity), offset, pitch })
   }
 
   private tick() {
@@ -192,7 +193,7 @@ class Transport {
             const opts = { velocity: h.velocity, bpm: state.bpm, pitchOffset: h.pitchOffset }
             engine.trigger(h.pad, state.pads, opts, h.nextRepeat)
             if (state.playing && state.record !== 'off' && !state.erase) {
-              this.recordHit(h.pad, h.velocity, h.nextRepeat)
+              this.recordHit(h.pad, h.velocity, h.nextRepeat, h.pitchOffset)
             }
             this.light(h.pad, h.nextRepeat)
           }
@@ -277,7 +278,13 @@ class Transport {
     if (this.suppress.delete(key)) return
     const anySolo = s.solos.some(Boolean)
     if (s.mutes[pad] || (anySolo && !s.solos[pad])) return
-    engine.trigger(pad, s.pads, { velocity: st.velocity, bpm: s.bpm, gate: stepDur * 0.95 }, time)
+    const opts = {
+      velocity: st.velocity,
+      bpm: s.bpm,
+      gate: stepDur * 0.95,
+      pitchOffset: st.pitch ?? 0,
+    }
+    engine.trigger(pad, s.pads, opts, time)
     this.light(pad, time)
   }
 

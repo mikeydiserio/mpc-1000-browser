@@ -15,7 +15,7 @@ const TAIL = 2
 export async function bounce(state: MpcState, loops: number): Promise<Blob> {
   const order =
     state.songMode && state.song.length ? state.song : Array(loops).fill(state.currentPattern)
-  const events: { pad: number; time: number; velocity: number; gate: number }[] = []
+  const events: { pad: number; time: number; velocity: number; gate: number; pitch: number }[] = []
   const anySolo = state.solos.some(Boolean)
   let t = 0
   for (const index of order) {
@@ -31,6 +31,7 @@ export async function bounce(state: MpcState, loops: number): Promise<Blob> {
           time: Math.max(0, at + (st.offset ?? 0) * stepDur),
           velocity: st.velocity,
           gate: stepDur * 0.95,
+          pitch: st.pitch ?? 0,
         })
       })
     }
@@ -47,6 +48,7 @@ export async function bounce(state: MpcState, loops: number): Promise<Blob> {
       velocity: e.velocity,
       bpm: state.bpm,
       gate: e.gate,
+      pitchOffset: e.pitch,
     })
   }
   const rendered = await ctx.startRendering()

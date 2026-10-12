@@ -633,3 +633,101 @@ input:focus-visible {
     animation: none;
   }
 }
+
+/* ─── Tune lane ───────────────────────────────────────────── */
+
+.tuneLane {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(var(--len), 1fr);
+  height: 96px;
+  border-radius: 4px;
+  background:
+    linear-gradient(
+      transparent calc(50% - 0.5px),
+      #3a3d42 calc(50% - 0.5px),
+      #3a3d42 calc(50% + 0.5px),
+      transparent calc(50% + 0.5px)
+    ),
+    #0b0c0d;
+  cursor: ns-resize;
+  touch-action: none;
+}
+
+.tuneBar {
+  position: relative;
+  margin: 0 1px;
+}
+
+.tuneBar[data-on] {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.tuneFill {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 50%;
+  border-radius: 1px;
+}
+
+.tuneFill[data-dir="up"] {
+  bottom: 50%;
+  transform-origin: bottom;
+  background: linear-gradient(180deg, #ffd24d 0%, #c98a12 100%);
+}
+
+.tuneFill[data-dir="down"] {
+  top: 50%;
+  transform-origin: top;
+  background: linear-gradient(0deg, #6ec3ff 0%, #2a6fa8 100%);
+}
+
+.tuneValue {
+  position: absolute;
+  left: 50%;
+  translate: -50% 0;
+  font-size: 9px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--silk);
+  pointer-events: none;
+}
+
+/* Label sits just past the bar tip, clamped inside the lane */
+.tuneValue[data-dir="up"] {
+  bottom: min(calc(50% + var(--mag) * 50% + 1px), calc(100% - 11px));
+}
+
+.tuneValue[data-dir="down"] {
+  top: min(calc(50% + var(--mag) * 50% + 1px), calc(100% - 11px));
+}
+
+.tuneLane[data-dense] .tuneValue {
+  display: none;
+}
+
+.shiftBtns .laneBtn {
+  width: auto;
+  padding: 0 6px;
+}
+
+/* Grid marker for steps carrying pitch automation */
+.cell[data-pitch]::before {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  top: 1px;
+  right: 1px;
+  border: 3px solid transparent;
+}
+
+.cell[data-pitch="up"]::before {
+  border-bottom-color: #c98a12;
+  border-top-width: 0;
+}
+
+.cell[data-pitch="down"]::before {
+  border-top-color: #2a6fa8;
+  border-bottom-width: 0;
+}

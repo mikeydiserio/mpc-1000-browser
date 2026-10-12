@@ -94,6 +94,8 @@ export interface Step {
    * TIMING CORRECT off; absent / 0 = exactly on the grid.
    */
   offset?: number
+  /** Per-step pitch automation in semitones (-24..24), added on top of the pad's tune */
+  pitch?: number
 }
 
 export interface Pattern {

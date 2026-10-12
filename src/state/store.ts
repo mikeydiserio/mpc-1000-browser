@@ -76,6 +76,8 @@ interface MpcActions {
   setMode: (mode: LcdMode) => void
   setStep: (pad: number, step: number, value: Partial<Step>) => void
   toggleStep: (pad: number, step: number, velocity?: number) => void
+  /** Reset a track's per-step pitch automation to 0 */
+  clearPitch: (pad: number) => void
   setPatternProp: <K extends 'length' | 'resolution' | 'swing' | 'name'>(
     key: K,
     value: Pattern[K],
@@ -210,6 +212,13 @@ export const useMpc = create<MpcState & MpcActions>()((set, get) => {
       updateTrack(pad, (track) => {
         const current = track[step]!
         track[step] = current.on ? { ...current, on: false } : { on: true, velocity }
+        return track
+      }),
+
+    clearPitch: (pad) =>
+      updateTrack(pad, (track) => {
+        for (let i = 0; i < track.length; i++)
+          if (track[i]!.pitch) track[i] = { ...track[i]!, pitch: 0 }
         return track
       }),
 

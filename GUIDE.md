@@ -49,7 +49,7 @@ That strip also describes any control you hover over.
 - **MAIN VOLUME** — Master output level. Also affects WAV exports.
 - **PAD BANK A / B / C / D** — Switch which 16 of the 64 pads the pads and the sequencer rows show. The green LED marks the active bank.
 - **FULL LEVEL** — Every pad hit plays at maximum velocity (127), regardless of where you hit.
-- **16 LEVELS** — Spreads the selected pad across all 16 pads: either 16 velocities (soft → hard) or 16 pitches (−4 to +11 semitones). Choose which in MODE → PAD10 (OTHER) → 16Lvl. Press again to turn off.
+- **16 LEVELS** — Spreads the selected pad across all 16 pads: either 16 velocities (soft → hard) or 16 pitches (−4 to +11 semitones). Choose which in MODE → PAD10 (OTHER) → 16Lvl. Recording in TUNE mode writes each note’s pitch into the Tune lane. Press again to turn off.
 - **NEXT SEQ** — Go to the next sequence (SHIFT + NEXT SEQ = previous). While playing it is queued (LED blinks) and switches at the end of the current loop.
 - **TRACK MUTE** — While lit, pads mute/unmute their sequencer tracks instead of playing (muted pads show striped). SHIFT + pad solos the track.
 
@@ -407,6 +407,7 @@ The panel to the right of the MPC.
 - **S** — Solo — only soloed tracks play.
 - **Step grid** — Click to add/remove a hit, drag to paint several. Shift-click adds an accent (velocity 127). Right-click a hit to cycle its velocity 127 → 100 → 70 → 40. Bar height and brightness show velocity.
 - **Velocity lane** — Velocities of the selected track. Drag up/down across the bars to draw them.
+- **Tune lane** — Per-step pitch automation for the selected track, in semitones on top of the pad’s own tune. Drag up/down across hits to draw pitches (centre line = 0), scroll over a hit for exact ±1 steps, double-click a hit to reset it. ±12 / ±24 sets the drawing range; Reset clears the whole track. Pitched hits show a small ▲/▼ marker in the grid.
 - **◀ shift ▶** — Move the selected track one step earlier or later.
 - **GUIDE** — Open this guide. Shortcut: ? key.
 
@@ -426,6 +427,13 @@ The panel to the right of the MPC.
 3. Play the pads or keys in time. Hits snap to steps; turn T.C. OFF to keep your exact feel.
 4. Hold TAP TEMPO + a pad for machine-gun hi-hats (NOTE REPEAT).
 5. Hold ERASE + a pad to remove its hits as they go by. UNDO SEQ if you slip.
+
+### Play a melody or bassline from one sample
+
+1. Select the pad (e.g. A14 Sub808) and paint the rhythm in its row of the grid.
+2. In the Tune lane below the grid, drag each hit up or down to set its note — the value shows in the lane header.
+3. Scroll over a hit for exact semitone steps; switch the range to ±24 for two-octave jumps.
+4. Or play it live: turn on 16 LEVELS (OTHER → 16Lvl: TUNE), press OVER DUB and play the pads — the pitches are recorded into the lane.
 
 ### Chop a sample across the pads
 
